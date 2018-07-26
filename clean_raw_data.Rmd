@@ -1,0 +1,34 @@
+---
+title: "clean_raw_data"
+author: "Andy Ho"
+date: "July 25, 2018"
+output: html_document
+---
+
+```{r}
+# In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe.  
+library(readxl)
+library(stringr)
+cs2DF <- read_excel("CaseStudy2-data_clean.xlsx", "HR-employee-attrition Data")
+
+# 2A - There are 1470 rows (observations) and 35 columns (variables)
+dimDF <- dim(cs2DF)
+names(dimDF) <- c("Rows", "Columns")
+dimDF
+
+# 2B - Results of column names and its string length count.  
+## Need to find a more elegant function to filter the list and subset only values greater than 12.  For now, this will suffice.
+lettercount <- str_length(names(cs2DF))
+countDF <- data.frame(cbind(names(cs2DF), lettercount))
+names(countDF) <- c("Variable", "LetterCount")
+countDF
+
+# 2C - Due to Qualtrics, the following columns will have its integer value replaced by the definitions provided in the "Data Definitions" sheet.  
+## Will need to seperate the interger and characters into two seperate columns.
+datadefDF <- read_excel ("CaseStudy2-data_clean.xlsx", "Data Definitions")
+datadefDF
+
+# 2D - Converting columns to correct data types.
+## Will work on over weekend.
+```
+
