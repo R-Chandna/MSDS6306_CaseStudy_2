@@ -9,7 +9,7 @@ output: html_document
 # In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe.  
 library(readxl)
 library(stringr)
-cs2DF <- read_excel("CaseStudy2-data_clean.xlsx", "HR-employee-attrition Data")
+cs2DF <- read_excel("Attrition_Data_Clean.xlsx", "HR-employee-attrition Data")
 
 # 2A - There are 1470 rows (observations) and 35 columns (variables)
 dimDF <- dim(cs2DF)
@@ -25,7 +25,7 @@ countDF
 
 # 2C - Due to Qualtrics, the following columns will have its integer value replaced by the definitions provided in the "Data Definitions" sheet.  
 ## Will need to seperate the interger and characters into two seperate columns.
-datadefDF <- read_excel ("CaseStudy2-data_clean.xlsx", "Data Definitions")
+datadefDF <- read_excel ("Attrition_Data_Clean.xlsx", "Data Definitions")
 datadefDF
 
 # 2D - Converting columns to correct data types.
