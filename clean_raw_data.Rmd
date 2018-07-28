@@ -9,26 +9,37 @@ output: html_document
 # In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe.  
 library(readxl)
 library(stringr)
-cs2DF <- read_excel("Attrition_Data_Clean.xlsx", "HR-employee-attrition Data")
+attritionDF <- read_excel("CaseStudy2-data.xlsx", "HR-employee-attrition Data")
 
 # 2A - There are 1470 rows (observations) and 35 columns (variables)
-dimDF <- dim(cs2DF)
+dimDF <- dim(attritionDF)
 names(dimDF) <- c("Rows", "Columns")
 dimDF
 
 # 2B - Results of column names and its string length count.  
 ## Need to find a more elegant function to filter the list and subset only values greater than 12.  For now, this will suffice.
-lettercount <- str_length(names(cs2DF))
-countDF <- data.frame(cbind(names(cs2DF), lettercount))
+lettercount <- str_length(names(attritionDF))
+countDF <- data.frame(cbind(names(attritionDF), lettercount))
 names(countDF) <- c("Variable", "LetterCount")
 countDF
 
+# Replacing Original Variable names that have > 12 characters with new names under the Working column in Attrition_Col_Name_New.csv.
+
+original <- names(attritionDF)
+write.csv(original, "Attrition_Col_Name_Old.csv")
+head(names(attritionDF))
+colNamesDF <- read.csv("Attrition_Col_Name_New.csv")
+working <- colNamesDF$Working
+names(attritionDF) <- working
+head(names(attritionDF))
+
+
 # 2C - Due to Qualtrics, the following columns will have its integer value replaced by the definitions provided in the "Data Definitions" sheet.  
-## Will need to seperate the interger and characters into two seperate columns.
-datadefDF <- read_excel ("Attrition_Data_Clean.xlsx", "Data Definitions")
+## Will need to seperate the integer and characters into two seperate columns.
+datadefDF <- read_excel ("CaseStudy2-data.xlsx", "Data Definitions")
 datadefDF
 
-# 2D - Converting columns to correct data types.
-## Will work on over weekend.
+# 2D - Verifying the columns class type are numeric and character.
+as.matrix(lapply(attritionDF, class))
 ```
 
