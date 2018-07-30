@@ -1,0 +1,117 @@
+---
+title: "RandomForest"
+author: "Rajat Chandna"
+date: "July 29, 2018"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r sessionInfo}
+library(randomForest)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(xlsx)
+library(reshape2)
+sessionInfo()
+```
+
+
+```{r Attrition_DataSet_Read}
+AttrDf <- read.xlsx2(file = "CaseStudy2-data.xlsx",sheetName = "HR-employee-attrition Data",header = T)
+dim(AttrDf)
+str(AttrDf)
+```
+
+```{r Correct_Format_Of_Col_In_DataFrame}
+as.data.frame(apply(AttrDf, 2, function(x) length(unique(x))))
+# Variables as Age, Daily rate that have very high frequency are better represented as numerics than as factors
+convertToNumeric <- c("Age", "DailyRate", "DistanceFromHome", "EmployeeNumber", "EmployeeCount", "HourlyRate", "MonthlyIncome", "MonthlyRate", "NumCompaniesWorked", "PercentSalaryHike", "StandardHours" , "TotalWorkingYears", "TrainingTimesLastYear", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager")
+for(columnName in convertToNumeric){
+  AttrDf[,columnName] <- as.numeric(AttrDf[,columnName])
+}
+# Extra Debug--Remove
+lapply(AttrDf, function(x){if(is.factor(x)) levels(x)})
+levelsInfoDf <- read.xlsx2(file = "CaseStudy2-data.xlsx",sheetName = "Data Definitions", startRow = 3, header = F)
+str(levelsInfoDf)
+levelsInfoDf[ , c("levelNo", "levelName")] <- colsplit(levelsInfoDf$X2, " ", c("levelNo", "levelName"))
+levelsInfoDf$levelName <- gsub('[[:punct:]]+','',levelsInfoDf$levelName)
+levelsInfoDf
+
+# Give Meaningful Category Names to Levels of factors that have levels as "1", "2" etc 
+# This will be done based upon the data definations present in the case study sheet
+levels(AttrDf$Education) <- levelsInfoDf[1:5, "levelName"]
+levels(AttrDf$EnvironmentSatisfaction) <- levelsInfoDf[7:10, "levelName"]
+levels(AttrDf$JobInvolvement) <- levelsInfoDf[12:15, "levelName"]
+levels(AttrDf$JobSatisfaction) <- levelsInfoDf[17:20, "levelName"]
+levels(AttrDf$PerformanceRating) <- levelsInfoDf[22:25, "levelName"]
+levels(AttrDf$RelationshipSatisfaction) <- levelsInfoDf[27:30, "levelName"]
+levels(AttrDf$WorkLifeBalance) <- levelsInfoDf[32:35, "levelName"]
+# Assigning Levels to variables Job Level and Stock Options as these are not mentioned in data defination sheet
+levels(AttrDf$JobLevel) <- c("Entry", "Experienced", "First-Level Management", "Middle-Level Management", "Top-Level Management")
+lapply(AttrDf, function(x){if(is.factor(x)) levels(x)})
+
+all(complete.cases(AttrDf))
+```
+
+```{r Fitting_The_Model}
+set.seed(99)
+subAttrDf <- subset(AttrDf, select = -EmployeeNumber)
+ModelRandomForest <- randomForest(Attrition ~ . , data=subAttrDf, proximity=T)
+ModelRandomForest
+```
+
+```{r Plotting_OOBError_Vs_No_Of_Trees}
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForest$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForest$err.rate)),
+  Error=c(ModelRandomForest$err.rate[,"OOB"],
+    ModelRandomForest$err.rate[,"No"],
+    ModelRandomForest$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+
+# Adding More Trees to Forest and checking Out of Bag Error Rate
+ModelRandomForestWith1000Trees <- randomForest(Attrition ~ . , data=subAttrDf, ntree = 1000,  proximity=T)
+ModelRandomForestWith1000Trees
+
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForestWith1000Trees$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForestWith1000Trees$err.rate)),
+  Error=c(ModelRandomForestWith1000Trees$err.rate[,"OOB"],
+    ModelRandomForestWith1000Trees$err.rate[,"No"],
+    ModelRandomForestWith1000Trees$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+```
+
+```{r Determining_The_Appropriate_Mtry_Value}
+outOfBagErrorValues <- vector(length = (dim(subAttrDf)[2] - 1))
+for (randomVarCount in 1:length(outOfBagErrorValues)){
+  testModel <- randomForest(Attrition ~ . , data=subAttrDf, ntree = 500,  mtry = randomVarCount)
+  outOfBagErrorValues[randomVarCount] <- testModel$err.rate[nrow(testModel$err.rate),1]
+}
+outOfBagErrorValues
+plot(outOfBagErrorValues, type = "o", col= "Blue")
+```
+
+```{r Fitting_The_FinalModel_BasedOn_Mtry_And_nTree_Values}
+# Appropriate ntree and mtry values for lowest out of bag error are as 500 and 11. Hence,
+# fitting final model based on these
+FinalFittedModel <- randomForest(Attrition ~ . , data=subAttrDf, ntree = 500, mtry = 11)
+FinalFittedModel
+```
+
+```{r Finding_And_Plotting_Top_Predictors}
+importanceMatrix <- importance(FinalFittedModel)
+importanceMatrix[order(-importanceMatrix[,1]), ]
+varImpPlot(FinalFittedModel)
+```
