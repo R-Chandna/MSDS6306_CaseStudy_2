@@ -1,0 +1,41 @@
+---
+title: "JPaffordCS2"
+author: "Jodi Pafford"
+date: "August 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## EDA for Case Study 2
+
+Install Packages/Load Libraries
+```{r Packages, echo=TRUE}
+library(readxl)
+library(ggplot2)
+```
+
+#Load File
+
+```{r File, echo=TRUE}
+df <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
+```
+
+## EDA
+
+```{r EDA, echo=TRUE}
+
+#Field of Study
+ggplot(df, aes(x = FieldOfStudy, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Field of Study", x = "Field of Study", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#Highest Level of Education
+ggplot(df, aes(x = Education, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Highest Level of Education", x = "Education Level", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#Number of Trainings Last Year
+ggplot(df, aes(x = TrainedLstYr, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Number of Trainings Last Year", x = "Number of Trainings Last Year", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#Total Working Years
+ggplot(df, aes(x = TotWorkExp, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Total Working Years", x = "Years Worked", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
