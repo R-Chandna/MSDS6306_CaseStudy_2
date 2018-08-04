@@ -1,0 +1,134 @@
+---
+title: "Case Study 2 Deliverable TAJAR"
+author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandra"
+date: "8/4/2018"
+output: html_document
+---
+# "Case Study 2 Report Title Here"
+
+* We will need to reorder this report so it flows like an actual report, but for now, I have put everything I could gather into question format, so it's in an order and can be edited from there. 
+
+## Question 1
+
+```{r}
+#a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
+#b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
+#c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
+```
+
+## Question 2
+
+```{r}
+# In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe.  
+library(readxl)
+library(stringr)
+attritionDF <- read_excel("CaseStudy2-data.xlsx", "HR-employee-attrition Data")
+
+# 2A - There are 1470 rows (observations) and 35 columns (variables)
+dimDF <- dim(attritionDF)
+names(dimDF) <- c("Rows", "Columns")
+dimDF
+
+# 2B - Results of column names and its string length count.  
+## Need to find a more elegant function to filter the list and subset only values greater than 12.  For now, this will suffice.
+lettercount <- str_length(names(attritionDF))
+countDF <- data.frame(cbind(names(attritionDF), lettercount))
+names(countDF) <- c("Variable", "LetterCount")
+countDF
+
+# Replacing Original Variable names that have > 12 characters with new names under the Working column in Attrition_Col_Name_New.csv.
+
+original <- names(attritionDF)
+write.csv(original, "Attrition_Col_Name_Old.csv")
+head(names(attritionDF))
+colNamesDF <- read.csv("Attrition_Col_Name_New.csv")
+working <- colNamesDF$Working
+names(attritionDF) <- working
+head(names(attritionDF))
+
+
+# 2C - Due to Qualtrics, the following columns will have its integer value replaced by the definitions provided in the "Data Definitions" sheet.  
+## Will need to seperate the integer and characters into two seperate columns.
+datadefDF <- read_excel ("CaseStudy2-data.xlsx", "Data Definitions")
+datadefDF
+
+# 2D - Verifying the columns class type are numeric and character.
+as.matrix(lapply(attritionDF, class))
+```
+
+## Question 3
+
+```{r, echo=TRUE}
+
+#An's code for Q3
+
+#read in the data
+
+library(readxl)
+
+attritiondata <- read_excel(path = "Attrition_Data_Col_Renamed.xlsx", sheet = "HR-employee-attrition Data")
+df <- read_excel(path = "Attrition_Data_Col_Renamed.xlsx", sheet = "HR-employee-attrition Data")
+
+#3a.  Age between 18 and 60, no children under 18 and no obvious age outliers.
+summary(attritiondata$Age)
+#3a.  None are labeled as under 18.
+attritiondata$Over18[attritiondata$Over18 == 'N']
+
+#Tori's code code for Q3
+#3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that’s your choice.
+#Needs some refining
+gendertable <- table(attritiondata$Gender)
+gendertable
+
+educationtable <- table(attritiondata$Education)
+educationtable
+
+occupationtable <- table(attritiondata$JobRole)
+occupationtable
+
+#3d. Give the counts (again, table) of management positions.
+#Needs some refining
+library(plyr)
+management <- count(attritiondata$JobRole)
+management <- management[management$x=="Manager",]
+```
+
+## Question 4
+
+```{r}
+library(ggplot2)
+
+#An's code for Q4b
+
+df <- read_excel(path = "C:/Users/anhai/Desktop/SMU/MSDS6306_CaseStudy_2/Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
+
+#4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
+##Monthly Rate
+ggplot(data = df, aes(x = df$Age, y = df$MonthlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Montly Rate vs Age", x = "Age", y = "Monthly Rate", color = "Gender")
+test <- lm(df$MonthlyRate ~ df$Age)
+summary(test)
+##Daily Rate
+ggplot(data = df, aes(x = df$Age, y = df$DailyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Daily Rate vs Age", x = "Age", y = "Daily Rate", color = "Gender")
+test <- lm(df$DailyRate ~ df$Age)
+summary(test)
+##Hourly Rate
+ggplot(data = df, aes(x = df$Age, y = df$HourlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Hourly Rate vs Age", x = "Age", y = "Hourly Rate", color = "Gender")
+test <- lm(df$HourlyRate ~ df$Age)
+summary(test)
+
+#4b. MonthlyInco shows correlation with Age.  Tried linear regression on untransformed data and log, reciprocal, square root transformations
+## untransformed
+ggplot(data = df, aes(x = Age, y = MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "Monthly Income", color = "Gender")
+## log transformed
+ggplot(data = df, aes(x = Age, y = log(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "log(Monthly Income)", color = "Gender", subtitle = "log transformed")
+## reciprocal transformed
+ggplot(data = df, aes(x = Age, y = -1/MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "-1/(Monthly Income)", color = "Gender", subtitle = "negative reciprocal transformed")
+## square root transformed
+ggplot(data = df, aes(x = Age, y = sqrt(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "sqrt(Monthly Income)", color = "Gender", subtitle = "square root transformed")
+
+#4b. Transformation did not yield better fit, fit test performed on most uncomplicated model, untransformed data
+test <- lm(df$MonthlyInco ~ df$Age, subset = df$Gender == 'Male')
+summary(test)
+test <- lm(df$MonthlyInco ~ df$Age, subset = df$Gender == 'Female')
+summary(test)
+```
