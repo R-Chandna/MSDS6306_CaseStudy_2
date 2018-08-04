@@ -24,7 +24,7 @@ Repo Created for Storing the SMU MSDS Case Study 2 Files
 CODEBOOK FOR ATTRITION DATA
 
 |Original|Working|Description|Values|
-|:-|:-|-:|:-:|
+|:-|:-|:-:|:-:|
 |Age|Age|Age of Employee|num|
 |Attrition|Attrition|Value for whether Employee have resigned from company|chr|
 |BusinessTravel|WorkTravel|Frequency categorization for Employee work travel|chr|
