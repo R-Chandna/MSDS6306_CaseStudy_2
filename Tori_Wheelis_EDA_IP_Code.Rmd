@@ -1,0 +1,182 @@
+---
+title: "CaseStudy2 EDA and IP Code"
+author: "Tori Wheelis"
+date: "July 31, 2018"
+output: html_document
+---
+
+```{r, echo=TRUE}
+
+#read in the data
+
+library(readxl)
+
+attritiondata <- read_excel(path = "Attrition_Data_Col_Renamed.xlsx", sheet = "HR-employee-attrition Data")
+df <- read_excel(path = "Attrition_Data_Col_Renamed.xlsx", sheet = "HR-employee-attrition Data")
+
+```
+
+## Question 3
+
+```{r, echo=TRUE}
+
+#An's code for Q3
+
+#3a.  Age between 18 and 60, no children under 18 and no obvious age outliers.
+summary(attritiondata$Age)
+#3a.  None are labeled as under 18.
+attritiondata$Over18[attritiondata$Over18 == 'N']
+
+#My code for Q3
+#3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that’s your choice.
+#Needs some refining
+gendertable <- table(attritiondata$Gender)
+gendertable
+
+educationtable <- table(attritiondata$Education)
+educationtable
+
+occupationtable <- table(attritiondata$JobRole)
+occupationtable
+
+#3d. Give the counts (again, table) of management positions.
+#Needs some refining
+library(plyr)
+management <- count(attritiondata$JobRole)
+management <- management[management$x=="Manager",]
+```
+
+## Question 4
+
+```{r}
+library(ggplot2)
+
+#An's code for Q4b
+#4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
+##Monthly Rate
+ggplot(data = df, aes(x = df$Age, y = df$MonthlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Montly Rate vs Age", x = "Age", y = "Monthly Rate", color = "Gender")
+test <- lm(df$MonthlyRate ~ df$Age)
+summary(test)
+##Daily Rate
+ggplot(data = df, aes(x = df$Age, y = df$DailyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Daily Rate vs Age", x = "Age", y = "Daily Rate", color = "Gender")
+test <- lm(df$DailyRate ~ df$Age)
+summary(test)
+##Hourly Rate
+ggplot(data = df, aes(x = df$Age, y = df$HourlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Hourly Rate vs Age", x = "Age", y = "Hourly Rate", color = "Gender")
+test <- lm(df$HourlyRate ~ df$Age)
+summary(test)
+
+#4b. MonthlyInco shows correlation with Age.  Tried linear regression on untransformed data and log, reciprocal, square root transformations
+## untransformed
+ggplot(data = df, aes(x = Age, y = MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "Monthly Income", color = "Gender")
+## log transformed
+ggplot(data = df, aes(x = Age, y = log(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "log(Monthly Income)", color = "Gender", subtitle = "log transformed")
+## reciprocal transformed
+ggplot(data = df, aes(x = Age, y = -1/MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "-1/(Monthly Income)", color = "Gender", subtitle = "negative reciprocal transformed")
+## square root transformed
+ggplot(data = df, aes(x = Age, y = sqrt(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "sqrt(Monthly Income)", color = "Gender", subtitle = "square root transformed")
+
+#4b. Transformation did not yield better fit, fit test performed on most uncomplicated model, untransformed data
+test <- lm(df$MonthlyInco ~ df$Age, subset = df$Gender == 'Male')
+summary(test)
+test <- lm(df$MonthlyInco ~ df$Age, subset = df$Gender == 'Female')
+summary(test)
+```
+
+## An EDA
+```{r}
+ggplot(df, aes(x = OverTime, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Over Time", x = "Over Time", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = StockOptLvl, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Stock Option Level", x = "Stock Option Levels", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = HourlyRate, fill = Attrition)) + geom_histogram(position = "fill", bins = 30) + labs(title = "Hourly Rate", x = "Hourly Rate", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = DailyRate, fill = Attrition)) + geom_histogram(position = "fill", bins = 30) + labs(title = "Daily Rate", x = "Daily Rate", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = MonthlyRate, fill = Attrition)) + geom_histogram(position = "fill", bins = 30) + labs(title = "Monthly Rate", x = "Monthly Rate", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = MonthlyInco, fill = Attrition)) + geom_histogram(position = "fill", bins = 30) + labs(title = "Monthly Income", x = "Monthly Income", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(df, aes(x = PctSalaryInc, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Percent Salary Increase", x = "Salary Increase (%)", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
+
+## Tori EDA
+
+```{r, echo=TRUE}
+#Tori EDA
+
+#Gender
+ggplot(attritiondata, aes(x = Gender, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Gender and Attrition", x = "Gender", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#There is a very high p-value for this regression
+genderlmdata <- attritiondata
+genderlmdata$Gender[genderlmdata$Gender=="Female"] <- 0
+genderlmdata$Gender[genderlmdata$Gender=="Male"] <- 1
+genderlm <- lm(genderlmdata$Gender ~ genderlmdata$Attrition)
+summary(genderlm)
+
+
+
+#Age
+ggplot(attritiondata, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#There is a very low p-value for this regression
+agelm <- lm(attritiondata$Age ~ attritiondata$Attrition)
+summary(agelm)
+
+
+
+#DistanceFromHome
+ggplot(attritiondata, aes(x = DistFromHome, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Distance from Home and Attrition", x = "Distance from Home", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#There is a medium p-value for this regression
+distancelm <- lm(attritiondata$DistFromHome ~ attritiondata$Attrition)
+summary(distancelm)
+
+
+#EnvironmentSatisfaction
+ggplot(attritiondata, aes(x = EnvrSatIndex, fill = Attrition)) + 
+  geom_bar(position = "fill") + 
+  labs(title = "Environment Satisfaction and Attrition") + 
+  scale_y_continuous(labels = scales::percent) + 
+  scale_x_continuous("Environment Satisfaction Index", breaks = c(1,2,3,4), labels=c("1 Low", "2 Medium","3 High", "4 Very High"))
+
+#There is a very small p-value on this regression
+environmentlm <- lm(attritiondata$EnvrSatIndex ~ attritiondata$Attrition)
+summary(environmentlm)
+
+
+#JobSatisfaction
+ggplot(attritiondata, aes(x = JobSatIndex, fill = Attrition)) + 
+  geom_bar(position = "fill") + 
+  labs(title = "Job Satisfaction and Attrition") + 
+  scale_y_continuous(labels = scales::percent) + 
+  scale_x_continuous("Job Satisfaction Index", breaks = c(1,2,3,4), labels=c("1 Low", "2 Medium","3 High", "4 Very High"))
+
+#There is a very small p-value on this regression
+joblm <- lm(attritiondata$JobSatIndex ~ attritiondata$Attrition)
+summary(joblm)
+
+
+#MaritalStatus
+ggplot(attritiondata, aes(x = MaritalState, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Marital Status and Attrition", x = "Marital Status", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+
+#RelationshipSatisfaction
+ggplot(attritiondata, aes(x = RelpSatIndex, fill = Attrition)) + 
+  geom_bar(position = "fill") + 
+  labs(title = "Relationship Satisfaction and Attrition") + 
+  scale_y_continuous(labels = scales::percent) + 
+  scale_x_continuous("Relationship Satisfaction Index", breaks = c(1,2,3,4), labels=c("1 Low", "2 Medium","3 High", "4 Very High"))
+
+#There is a medium to large p-value on this regression
+relationshiplm <- lm(attritiondata$RelpSatIndex ~ attritiondata$Attrition)
+summary(relationshiplm)
+
+
+#WorkLifeBalance
+ggplot(attritiondata, aes(x = WorkLifeFit, fill = Attrition)) + 
+  geom_bar(position = "fill") + 
+  labs(title = "Work-Life Balance and Attrition") + 
+  scale_y_continuous(labels = scales::percent) + 
+  scale_x_continuous("Work-Life Balance Index", breaks = c(1,2,3,4), labels=c("1 Bad", "2 Good","3 Better", "4 Best"))
+
+#There is a medium to large p-value on this regression
+worklifelm <- lm(attritiondata$WorkLifeFit ~ attritiondata$Attrition)
+summary(worklifelm)
+
+```
