@@ -1,0 +1,67 @@
+---
+title: "EDA_Andy"
+author: "Andy Ho"
+date: "7/28/2018"
+output: html_document
+---
+
+#### Summary: EDA on the following Variables:
++ JobRole
++ JobInvolvement
++ JobLevel
++ NumCompaniesWorked
++ PerformanceRating
++ BusinessTravel
+
+#### Based on the following bar charts, the following stand out for high attrition:
++ Job Role: Sales Representative.  
++ Job Involvment: Low
++ Job Level: 1
++ Number of Prior Companies: Scattered so none that show as prominent.
++ Performance Rating: Both equal amount of attrition.
++ Business Travel: Those who travel frequently, which makes sense as Sales Representatives tend to travel for their role.
+
+```{r}
+library(readxl)
+library(stringr)
+library(ggplot2)
+EDA <- read_excel("CaseStudy2-data_clean.xlsx", "HR-employee-attrition Data")
+```
+
+```{r}
+# Job Role by Attrition
+ggplot(EDA, aes(x = JobRole, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Job Role", x = "Job Role", y = "", color = "")+ scale_y_continuous(labels = scales::percent)+theme(axis.text.x = element_text(angle = 90))
+
+# Job Involvement by Attrition
+ggplot(EDA, aes(x = JobInvolv, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Job Involvement", x = "Job Involvement", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+# Job Level by Attrition
+ggplot(EDA, aes(x = JobLevel, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Job Level", x = "Job Level", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+# Number of Companied Worked by Attrition
+ggplot(EDA, aes(x = NumPriorComp, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Number of Prior Companies", x = "Number of Prior Companies", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+# Performance Rating by Attrition
+ggplot(EDA, aes(x = PerfRating, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Performance Rating", x = "Performance Rating", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+
+#Business Travel by Attrition
+ggplot(EDA, aes(x = WorkTravel, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Business Travel", x = "Business Travel", y = "", color = "")+ scale_y_continuous(labels = scales::percent)+theme(axis.text.x = element_text(angle = 90))
+```
+#### Creates Pie Chart of the total frequency count of Attrition
+```{r}
+library(plyr)
+attrition.count <- count(EDA, 'Attrition')
+attrition.count
+slices <- attrition.count$freq
+lbls <- attrition.count$Attrition
+pct <- round(slices/sum(slices)*100)
+lbls <- paste(lbls, pct) # add percents to labels 
+lbls <- paste(lbls,"%",sep="") # ad % to labels 
+pie(slices,labels = lbls, col=rainbow(length(lbls)),
+  	main="Total Attrition for Data Set")
+```
+
+```{r}
+EDA.ClassType <- as.matrix(lapply(EDA, class))
+EDA.ClassType
+```
