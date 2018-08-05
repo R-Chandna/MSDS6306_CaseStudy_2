@@ -96,20 +96,20 @@ row.names(SummaryStat) <- c("MonthlyInco", "Age", "DistFromHome", "PctSalarInc",
 OverTimeTable <- as.data.frame(table(df$OverTime))
 OverTimeTable <- data.frame(OverTimeTable[,-1], row.names = OverTimeTable[,1])
 colnames(OverTimeTable) <- c("Freq")
-JobLevelTable <- as.data.frame(table(df$JobLevel))
-JobLevelTable <- data.frame(JobLevelTable[,-1], row.names = JobLevelTable[,1])
-colnames(JobLevelTable) <- c("Freq")
+JobSatTable <- as.data.frame(table(df$JobSatIndex))
+JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
+colnames(JobSatTable) <- c("Freq")
 
 #Summary statistics
 SummaryStat
 OverTimeTable
-JobLevelTable
+JobSatTable
 
 #Barplot of Over Time
 ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 
 #Barplot of Job Level
-ggplot(JobLevelTable, aes(reorder(x=row.names(JobLevelTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobLevelTable))) + labs(title = "Employees per Job Level", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 15, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 
 
 #Monthly Income is extremely left skewed around $5000
