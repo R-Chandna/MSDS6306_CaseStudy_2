@@ -4,19 +4,35 @@ author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandra"
 date: "8/4/2018"
 output: html_document
 ---
-# "Case Study 2 Report Title Here"
+# Employees Who Feel Valued Don't Leave (*working title)
 
-* We will need to reorder this report so it flows like an actual report, but for now, I have put everything I could gather into question format, so it's in an order and can be edited from there. 
+## Introduction
 
-## Question 1
+Attrition, or voluntary employee turnover, comes as a high cost to companies.  The cost of interviewing, training, productivity, and negative impacts on morale are just a few. To help facilitate talent management and reduce attrition, thereby reducing real cost to companies, DDSAnalytics's in-house data science team, TAJAR, has compiled some important characteristics associated with increased risk of employee turnover. Our findings will allow companies to identify possible causes of employee turnover, create targeted approaches, and improve their talent management along with their profit margins.
+
+## Methodology
+
+This data, obtained from Hally Sansen's corporate office, allows a snapshot in to a large, thriving corporate company who could benefit from reducing attrition rates. TAJAR used, in addition to some basic descriptive statistics, a random forest model to identify the most salient factors contributing to employee attrition (add more detail here).
+
+All of the code used to explore the data, including code not attached to this report, more details on the research methodology, and the data, as well a copy of this report, can be found online at https://github.com/R-Chandna/MSDS6306_CaseStudy_2.git.
 
 ```{r}
-#a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
-#b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
-#c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
+#1a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
+#1b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
+#1c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
 ```
 
-## Question 2
+After the data was cleaned and corrected for any formatting errors (since a few of the measures were self-reports from the employees), TAJAR reviewed the descriptive statistics. Then, TAJAR built a random forest model and edited it to identify the variables most strongly associated with attrition. After the initial findings, TAJAR continued to dig deeper and understand the "why" behind the numbers.
+
+## Dataset Overview
+
+The dataset included information gathered on 1,470 employees who voluntarily filled out an online survey and had 35 variables that included whether or not they left the company (attrition), demographics such as age, gender, and marital status, as well as employee information such as job role, stock options, and compensation, and also included some other metrics, such as relationship, environment, and job satisfaction, etc.
+
+While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
+
+## Evaluations and Results
+
+Here is where we answer all the questions and create a story explaining the relationships in the data, using the code below, and writing a report:
 
 ```{r}
 # In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe.  
@@ -56,7 +72,6 @@ datadefDF
 as.matrix(lapply(attritionDF, class))
 ```
 
-## Question 3
 
 ```{r, echo=TRUE}
 
@@ -93,7 +108,6 @@ management <- count(attritiondata$JobRole)
 management <- management[management$x=="Manager",]
 ```
 
-## Question 4
 
 ```{r}
 library(ggplot2)
@@ -132,3 +146,7 @@ summary(test)
 test <- lm(df$MonthlyInco ~ df$Age, subset = df$Gender == 'Female')
 summary(test)
 ```
+
+## Summary
+
+Here is where we put our insights and conclusions and close out the report.
