@@ -30,6 +30,16 @@ The dataset included information gathered on 1,470 employees who voluntarily fil
 
 While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
 
+* We noted that the number of trainings received (greater than 0) did not have a significant impact on attrition.
+```{r Trainings, echo=TRUE}
+library(ggplot2)
+library(readxl)
+df <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
+
+#Number of Trainings Last Year - Jodi
+ggplot(df, aes(x = TrainedLstYr, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Number of Trainings Last Year", x = "Number of Trainings", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
+
 ## Evaluations and Results
 
 Here is where we answer all the questions and create a story explaining the relationships in the data, using the code below, and writing a report:
@@ -114,7 +124,7 @@ library(ggplot2)
 
 #An's code for Q4b
 
-df <- read_excel(path = "C:/Users/anhai/Desktop/SMU/MSDS6306_CaseStudy_2/Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
+df <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
 
 #4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
 ##Monthly Rate
