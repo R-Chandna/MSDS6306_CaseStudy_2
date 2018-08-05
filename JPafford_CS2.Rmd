@@ -32,7 +32,7 @@ df <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrit
 ggplot(df, aes(x = FieldOfStudy, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Field of Study", x = "Field of Study", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-#### All fields of study have approximatley the same Attrition rate. The highest attrition rate is LIfe Sciences, Medical, and Other.
+#### All fields of study have approximatley the same Attrition rate. Employees who workin the Life Sciences, Medical Field, and Other fields tend to stay longer than those in Human Resources, Marketing, and those with Technical Degrees.
 
 ---
 
@@ -43,7 +43,7 @@ ggplot(df, aes(x = FieldOfStudy, fill = Attrition)) + geom_bar(position = "fill"
 ggplot(df, aes(x = Education, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Highest Level of Education", x = "Education Level", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
 ```
 
-#### All levels of education have very similar attrition rates. Those that hold a Doctorate have a slightly better attrition rate. This is likely due to the committment required for completion of a Doctorate degree.
+#### All levels of education have very similar attrition rates. 
 
 ---
 
@@ -65,7 +65,7 @@ ggplot(df, aes(x = TrainedLstYr, fill = Attrition)) + geom_bar(position = "fill"
 ggplot(df, aes(x = TotWorkExp, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Total Working Years", x = "Number of Years", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
 ```
 
-#### Attrition rate during the first 3 years of working is high.  The rate gradually tapers. There is some signficant differences at year 27, 29, 30, 35, 36, 37, and 38, where there is a 100% no attrition. This is likely caused by retirement.  The 100% attrition rate at year 40 could be attributed to the low number of respondants for this number of working years.
+#### Just over half of workers in their first two years of working stay in their jobs.  The rate of attrition drops significantly after year 2 and gradually goes in a downward motion until roughly 20 years. There is some signficant differences at year 27, 29, 30, 35, 36, 37, and 38, where all workers report to have stayed in their jobs. The 100% attrition rate at year 40 could be attributed to the low number of respondants for this number of working years and/or retirement.
 
 ---
 
@@ -76,18 +76,37 @@ ggplot(df, aes(x = TotWorkExp, fill = Attrition)) + geom_bar(position = "fill") 
 ggplot(df, aes(x = YrsAtCompany, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Years at Current Company", x = "Number of Years", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
 ```
 
-#### Place Holder
+#### For most of the years at a company, it reflects the fact that the longer you are at a company, the longer you will stay.  The exception to this is year 23 where the rate is roughly 50%.  Also years 31-33 where the attrition rate is between 20% and 35%.
 
 ---
 
 ### Years in Current Role
 
-```{r JodiEDA, echo=TRUE}
+```{r Role, echo=TRUE}
 #Years in Current Role
 ggplot(df, aes(x = YrsInRole, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Years in Current Role", x = "Number of Years", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
 
+#### Workers who are in their first 5 years in their role, tend to stay longer than those who have been in their role longer.  The exception is year 15.  This could be due to mid-career job changes or retirement after 15 years in a higher profile role.
+
+---
+
+### Years Since Last Promotion
+
+```{r Promotion, echo=TRUE}
 #Years Since Last Promotion
 ggplot(df, aes(x = LastPromoted, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Years Since Last Promotion", x = "Number of Years", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
 
-# Years with Current Manager
+#### Many times promotion is emphasised in HR, however, given the data provided, the number of years since last promotion are roughly similar across the board.  
+
+---
+
+### Years with Current Manager
+
+```{r Manager, echo=TRUE}
+#Years with Current Manager
 ggplot(df, aes(x = YrsWithMgr, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Years with Current Manager", x = "Number of Years", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
+
+#### Keeping the same manager year after year appears to have approximatly the same affect on an employees desire to stay as those that work with the manager for just 1 year.  The oulier is year 14 where the attrition rate is approximately 35%.
