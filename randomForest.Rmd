@@ -19,6 +19,10 @@ library(dplyr)
 library(tidyr)
 library(xlsx)
 library(reshape2)
+library(party)
+library(gmodels)
+library(vcd)
+library(caret)
 sessionInfo()
 ```
 
@@ -58,6 +62,24 @@ levels(AttrDf$JobLevel) <- c("Entry", "Experienced", "First-Level Management", "
 lapply(AttrDf, function(x){if(is.factor(x)) levels(x)})
 
 all(complete.cases(AttrDf))
+```
+
+```{r doingALittleEDA}
+## Create a vector of all categorical variables
+categoricalVarVec <- c("BusinessTravel","Department", "Education", "EducationField", "EnvironmentSatisfaction", "Gender", "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", "MaritalStatus", "OverTime", "PerformanceRating", "RelationshipSatisfaction", "StockOptionLevel","WorkLifeBalance")
+for(categoricalVar in categoricalVarVec){
+  CrossTable(AttrDf[ ,categoricalVar], AttrDf$Attrition, chisq = T)
+  mosaicplot(CrossTable(AttrDf[ ,categoricalVar], AttrDf$Attrition)$t, main = paste("Attrition Vs", categoricalVar, sep = " "), xlab = categoricalVar, ylab = "Attrition", color = T)
+}
+## Do the same for Numeric Variables
+numericVarVec <- c("Age", "DailyRate", "DistanceFromHome", "HourlyRate", "MonthlyIncome", "MonthlyRate", "NumCompaniesWorked", "PercentSalaryHike" , "TotalWorkingYears", "TrainingTimesLastYear", "YearsAtCompany", "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager")
+# Recode the Attrition Var
+AttrDf$RecodedAttrVar <- ifelse(AttrDf$Attrition == "Yes", 1, 0)
+for(numericVar in numericVarVec){
+  plot(x = AttrDf[ ,numericVar], y = AttrDf$RecodedAttrVar,main = paste("Attrition Vs", numericVar, sep = " "), xlab = numericVar, ylab = "Attrition")
+}
+# Drop the Recoded Attrition Column
+AttrDf <- subset(AttrDf, select = -RecodedAttrVar)
 ```
 
 ```{r Fitting_The_Model}
@@ -115,3 +137,28 @@ importanceMatrix <- importance(FinalFittedModel)
 importanceMatrix[order(-importanceMatrix[,1]), ]
 varImpPlot(FinalFittedModel)
 ```
+
+```{r Finding_And_Plotting_Top_Predictors_1}
+subAttrDf <- subset(subAttrDf, select = -Over18)
+cf1 <- cforest(Attrition ~ . , data=subAttrDf, control=cforest_unbiased(mtry=11,ntree=500))
+#relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
+#relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
+#relativeImp_CondRandForest
+# Importance based upon decrease in acuracy
+relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
+#relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
+relativeImp_CondRandForest_1
+write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T)
+```
+
+
+```{r runLogisticRegressionModel}
+names(subAttrDf)
+subAttrDf <- subset(subAttrDf, select = -c(StandardHours, EmployeeCount))
+logisticModelFit <- glm(Attrition ~ ., data=subAttrDf, family = "binomial")
+summary(logisticModelFit)
+relativeImp <- varImp(logisticModelFit, scale = F)
+relativeImp <- relativeImp[order(-relativeImp[,1]), , drop = F]
+relativeImp
+```
+
