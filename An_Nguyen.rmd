@@ -84,27 +84,32 @@ ggplot(df, aes(x = PctSalaryInc, fill = Attrition)) + geom_bar(position = "fill"
 SummaryStat <- matrix(ncol = 6, nrow = 0)
 SummaryStat <- rbind(SummaryStat, summary(df$MonthlyInco))
 SummaryStat <- rbind(SummaryStat, summary(df$Age))
-SummaryStat <- rbind(SummaryStat, summary(df$MonthlyRate))
-SummaryStat <- rbind(SummaryStat, summary(df$DailyRate))
+SummaryStat <- rbind(SummaryStat, summary(df$DistFromHome))
+SummaryStat <- rbind(SummaryStat, summary(df$PctSalaryInc))
 SummaryStat <- rbind(SummaryStat, summary(df$TotWorkExp))
+SummaryStat <- rbind(SummaryStat, summary(df$YrsAtCompany))
+SummaryStat <- rbind(SummaryStat, summary(df$NumPriorComp))
 SummaryStat <- as.data.frame(SummaryStat)
-row.names(SummaryStat) <- c("MonthlyInco", "Age", "MonthlyRate", "DailyRate", "TotWorkExp")
+row.names(SummaryStat) <- c("MonthlyInco", "Age", "DistFromHome", "PctSalarInc", "TotWorkExp", "YrsAtCompany", "NumPriorComp")
 
 #Create table with summary of variables with categorial variables
 OverTimeTable <- as.data.frame(table(df$OverTime))
 OverTimeTable <- data.frame(OverTimeTable[,-1], row.names = OverTimeTable[,1])
 colnames(OverTimeTable) <- c("Freq")
-JobRoleTable <- as.data.frame(table(df$JobRole))
-JobRoleTable <- data.frame(JobRoleTable[,-1], row.names = JobRoleTable[,1])
-colnames(JobRoleTable) <- c("Freq")
+JobLevelTable <- as.data.frame(table(df$JobLevel))
+JobLevelTable <- data.frame(JobLevelTable[,-1], row.names = JobLevelTable[,1])
+colnames(JobLevelTable) <- c("Freq")
 
 #Summary statistics
 SummaryStat
 OverTimeTable
-JobRoleTable
+JobLevelTable
 
-#Barplot of Job role
-ggplot(JobRoleTable, aes(reorder(x=row.names(JobRoleTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobRoleTable))) + labs(title = "Employees per Job Role", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 15, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+#Barplot of Over Time
+ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+
+#Barplot of Job Level
+ggplot(JobLevelTable, aes(reorder(x=row.names(JobLevelTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobLevelTable))) + labs(title = "Employees per Job Level", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 15, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 
 
 #Monthly Income is extremely left skewed around $5000
