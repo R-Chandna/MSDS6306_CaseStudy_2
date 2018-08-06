@@ -12,6 +12,22 @@ output:
 # In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe. 
 library(ggplot2)
 library(readxl)
+library(randomForest)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(xlsx)
+library(reshape2)
+library(party)
+library(gmodels)
+library(vcd)
+library(caret)
+library(e1071)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
+sessionInfo()
 attritionDF <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
 ```
 
@@ -154,8 +170,8 @@ While exploring the data, these trends related to job role (and that may or may 
 
 For privacy reasons, IBM and TAJAR with DDSAnalytics did not want to run any analyses on minors. There were, however, no minors in the dataset. The age of the participating employees ranged from 18-60.
 
-```{r, echo=TRUE}
 
+```{r, echo=TRUE}
 #3a -	Remove all observations where the participant is under age 18.  No further analysis of underage individuals is permitted by your client.  Remove any other age outliers as you see fit, but be sure to tell what you’re doing and why.
 # Age between 18 and 60, no children under 18 and no obvious age outliers.
 summary(attritionDF$Age)
@@ -166,10 +182,152 @@ attritionDF$Over18[attritionDF$Over18 == 'N']
 
 Once TAJAR completed the random forest, it was found that the top 7 factors contributing to attrition were: 1) How satisfied an employee was with their hob, 2) Whether an employee reported working overtime, 3) How satisfied an employee was with their general environment, 4) What level their job was considered, on a scale from 1-5, 5) an employee's hourly rate, 6) An employee's work/life balance score, 7) and Whether or not the employee was married (which was closely correlated with their age.)
 
-```{r, echo=TRUE}
-#**ANDY and RAJAT** Check my wording above and fill in relevant info and code from the random forest. Please feel free to add copy, too.
+```{r Attrition_DataSet_Read}
+# Create a copy of original DataFrame
+formattedAttrDF <- data.frame(attritionDF)
+str(formattedAttrDF)
 ```
-ADD COPY HERE ABOUT WHAT WE FOUND WITH THE RANDOM FOREST
+
+```{r Correct_Format_Of_Col_In_DataFrame}
+as.data.frame(apply(formattedAttrDF, 2, function(x) length(unique(x))))
+# Converting relevant Character Variables to Factors since these have levels. 
+convertToFactors <- c("Attrition", "WorkTravel", "Department", "Education", "FieldOfStudy", "EnvrSatIndex", "Gender", "JobInvolv", "JobLevel", "JobRole", "JobSatIndex" , "MaritalState", "Over18", "OverTime", "PerfRating", "RelpSatIndex", "StockOptLvl", "WorkLifeFit")
+for(columnName in convertToFactors){
+  formattedAttrDF[,columnName] <- as.factor(formattedAttrDF[,columnName])
+}
+# Extra Debug--Remove
+lapply(formattedAttrDF, function(x){if(is.factor(x)) levels(x)})
+levelsInfoDf <- read.xlsx2(file = "CaseStudy2-data.xlsx",sheetName = "Data Definitions", startRow = 3, header = F)
+str(levelsInfoDf)
+levelsInfoDf[ , c("levelNo", "levelName")] <- colsplit(levelsInfoDf$X2, " ", c("levelNo", "levelName"))
+levelsInfoDf$levelName <- gsub('[[:punct:]]+','',levelsInfoDf$levelName)
+levelsInfoDf
+
+# Give Meaningful Category Names to Levels of factors that have levels as "1", "2" etc 
+# This will be done based upon the data definations present in the case study sheet
+levels(formattedAttrDF$Education) <- levelsInfoDf[1:5, "levelName"]
+levels(formattedAttrDF$EnvrSatIndex) <- levelsInfoDf[7:10, "levelName"]
+levels(formattedAttrDF$JobInvolv) <- levelsInfoDf[12:15, "levelName"]
+levels(formattedAttrDF$JobSatIndex) <- levelsInfoDf[17:20, "levelName"]
+levels(formattedAttrDF$PerfRating) <- levelsInfoDf[22:25, "levelName"]
+levels(formattedAttrDF$RelpSatIndex) <- levelsInfoDf[27:30, "levelName"]
+levels(formattedAttrDF$WorkLifeFit) <- levelsInfoDf[32:35, "levelName"]
+# Assigning Levels to variables Job Level and Stock Options as these are not mentioned in data defination sheet
+levels(formattedAttrDF$JobLevel) <- c("Entry", "Experienced", "First-Level Management", "Middle-Level Management", "Top-Level Management")
+levels(formattedAttrDF$WorkTravel) <- c("Non-Travel", "Travel_Rarely", "Travel_Frequently")
+lapply(formattedAttrDF, function(x){if(is.factor(x)) levels(x)})
+
+all(complete.cases(formattedAttrDF))
+```
+
+```{r doingALittleEDA}
+## Create a vector of all categorical variables
+categoricalVarVec <- c("WorkTravel", "Department", "Education", "FieldOfStudy", "EnvrSatIndex", "Gender", "JobInvolv", "JobLevel", "JobRole", "JobSatIndex" , "MaritalState", "OverTime", "PerfRating", "RelpSatIndex", "StockOptLvl", "WorkLifeFit")
+for(categoricalVar in categoricalVarVec){
+  CrossTable(formattedAttrDF[ ,categoricalVar], formattedAttrDF$Attrition, chisq = T)
+  mosaicplot(CrossTable(formattedAttrDF[ ,categoricalVar], formattedAttrDF$Attrition)$t, main = paste("Attrition Vs", categoricalVar, sep = " "), xlab = categoricalVar, ylab = "Attrition", color = T)
+}
+## Do the same for Numeric Variables
+numericVarVec <- c("Age", "DailyRate", "DistFromHome", "HourlyRate", "MonthlyInco", "MonthlyRate", "NumPriorComp", "PctSalaryInc" , "TotWorkExp", "TrainedLstYr", "YrsAtCompany", "YrsInRole", "LastPromoted", "YrsWithMgr")
+# Recode the Attrition Var
+formattedAttrDF$RecodedAttrVar <- ifelse(formattedAttrDF$Attrition == "Yes", 1, 0)
+for(numericVar in numericVarVec){
+  plot(x = formattedAttrDF[ ,numericVar], y = formattedAttrDF$RecodedAttrVar,main = paste("Attrition Vs", numericVar, sep = " "), xlab = numericVar, ylab = "Attrition")
+}
+# Drop the Recoded Attrition Column
+formattedAttrDF <- subset(formattedAttrDF, select = -RecodedAttrVar)
+```
+
+```{r Fitting_The_Model}
+set.seed(99)
+subformattedAttrDF <- subset(formattedAttrDF, select = -EmployeeID)
+ModelRandomForest <- randomForest(Attrition ~ . , data=subformattedAttrDF, proximity=T)
+ModelRandomForest
+```
+
+```{r Plotting_OOBError_Vs_No_Of_Trees}
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForest$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForest$err.rate)),
+  Error=c(ModelRandomForest$err.rate[,"OOB"],
+    ModelRandomForest$err.rate[,"No"],
+    ModelRandomForest$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+
+# Adding More Trees to Forest and checking Out of Bag Error Rate
+ModelRandomForestWith1000Trees <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 1000,  proximity=T)
+ModelRandomForestWith1000Trees
+
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForestWith1000Trees$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForestWith1000Trees$err.rate)),
+  Error=c(ModelRandomForestWith1000Trees$err.rate[,"OOB"],
+    ModelRandomForestWith1000Trees$err.rate[,"No"],
+    ModelRandomForestWith1000Trees$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+```
+
+```{r Determining_The_Appropriate_Mtry_Value}
+outOfBagErrorValues <- vector(length = (dim(subformattedAttrDF)[2] - 1))
+for (randomVarCount in 1:length(outOfBagErrorValues)){
+  testModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500,  mtry = randomVarCount)
+  outOfBagErrorValues[randomVarCount] <- testModel$err.rate[nrow(testModel$err.rate),1]
+}
+outOfBagErrorValues
+plot(outOfBagErrorValues, type = "o", col= "Blue")
+```
+
+```{r Fitting_The_FinalModel_BasedOn_Mtry_And_nTree_Values}
+# Appropriate ntree and mtry values for lowest out of bag error are as 500 and 11. Hence,
+# fitting final model based on these
+FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 11)
+FinalFittedModel
+```
+
+```{r Finding_And_Plotting_Top_Predictors}
+importanceMatrix <- importance(FinalFittedModel)
+importanceMatrix[order(-importanceMatrix[,1]), ]
+varImpPlot(FinalFittedModel)
+```
+
+```{r Finding_And_Plotting_Top_Predictors_Conditional_RForest}
+subformattedAttrDF <- subset(subformattedAttrDF, select = -Over18)
+cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=11,ntree=500))
+#relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
+#relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
+#relativeImp_CondRandForest
+# Importance based upon decrease in acuracy
+relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
+#relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
+relativeImp_CondRandForest_1
+write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T, append = F)
+# Calculate Model Accuracy
+caret:::cforestStats(cf1)
+```
+
+
+```{r runLogisticRegressionModel}
+names(subformattedAttrDF)
+subformattedAttrDF <- subset(subformattedAttrDF, select = -c(StdHours, Headcount))
+logisticModelFit <- glm(Attrition ~ ., data=subformattedAttrDF, family = "binomial")
+summary(logisticModelFit)
+relativeImp <- varImp(logisticModelFit, scale = F)
+relativeImp <- relativeImp[order(-relativeImp[,1]), , drop = F]
+relativeImp
+```
+
+**So both Conditional Random Forest and Logistic Regression Model have found Overtime, JobSatisfaction and EnvironmentSatisfaction as top three predictors.**
+
+```{r creatTheWordCloud}
+wordCloudDF <- read.xlsx(file = "WordCloudData.xlsx", header = F, 1)
+wordcloud(words = testDF$X1, freq = testDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
+```
+
+
 
 Since, during the demgraphics and exploratory phase of the data analysis, employees between the ages of 18-21 seemed to have a significant spike in attrition, and income seemed to have some relationship with attrition, TAJAR decided to further explore the relationship of these variables. It was found that age and income are correlated with each other. Age, though mostly normally distributed throughout the company, has a slightly larger amount of employees around the age of 36. The incomes of these employees, however are not normally distributed and a large majority of the employees make at or below 5,000 dollars a month, or 60,000 dollars a year or less.
 

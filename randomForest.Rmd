@@ -23,6 +23,7 @@ library(party)
 library(gmodels)
 library(vcd)
 library(caret)
+library(e1071)
 sessionInfo()
 ```
 
@@ -138,7 +139,7 @@ importanceMatrix[order(-importanceMatrix[,1]), ]
 varImpPlot(FinalFittedModel)
 ```
 
-```{r Finding_And_Plotting_Top_Predictors_1}
+```{r Finding_And_Plotting_Top_Predictors_Conditional_RForest}
 subAttrDf <- subset(subAttrDf, select = -Over18)
 cf1 <- cforest(Attrition ~ . , data=subAttrDf, control=cforest_unbiased(mtry=11,ntree=500))
 #relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
@@ -149,6 +150,8 @@ relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
 #relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
 relativeImp_CondRandForest_1
 write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T)
+# Calculate Model Accuracy
+caret:::cforestStats(cf1)
 ```
 
 
