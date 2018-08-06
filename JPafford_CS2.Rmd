@@ -9,9 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# EDA for Case Study 2
-
-Install Packages/Load Libraries
+## Install Packages/Load Libraries
 ```{r Packages, echo=TRUE}
 library(readxl)
 library(ggplot2)
@@ -23,6 +21,31 @@ library(ggplot2)
 df <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
 ```
 
+# 4D - Life Satisfaction
+
+#### When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
+
+```{r Satisfaction, echo=TRUE}
+#Create a Life Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
+Satisfaction <- subset(df, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(Satisfaction)
+
+#Create a visual to display.
+ggplot(Satisfaction, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Attrition", x = "work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+
+
+#Create a Life Satisfaction data frame with Attrition (No), Work Life Balance and Job Satsifaction.
+SatisfactionN <- subset(df, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(SatisfactionN)
+
+#Create a visual to display.
+ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - No Attrition", x = "work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+```
+
+
+---
+
+# EDA for Case Study 2
 # Analysis of Other Possible Attrition Factors
 
 ### Field of Study
