@@ -306,7 +306,10 @@ cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased
 #relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
 #relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
 #relativeImp_CondRandForest
-# Importance based upon decrease in acuracy
+# Importance based upon decrease in acuracy without corelation
+relativeImp_CondRandForest <-  varimpAUC(cf1)
+write.csv(relativeImp_CondRandForest, file = "Testing4.csv", row.names = T, append = F)
+# Importance based upon decrease in acuracy with corelation
 relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
 #relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
 relativeImp_CondRandForest_1
@@ -330,7 +333,7 @@ relativeImp
 
 ```{r creatTheWordCloud}
 wordCloudDF <- read.xlsx(file = "WordCloudData.xlsx", header = F, 1)
-wordcloud(words = testDF$X1, freq = testDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
+wordcloud(words = wordCloudDF$X1, freq = wordCloudDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
 ```
 
 
