@@ -118,3 +118,14 @@ ggplot(df, aes(MonthlyInco)) + geom_histogram(color = brewer.pal(11, "Spectral")
 #Age is slightly left skewed around 36 years of age
 ggplot(df, aes(Age)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Employee's Ages", y = "Employees", x = "Years")
 ```
+
+```{r, job satisfaction vs. job role and overtime vs. job satisfaction}
+
+#Job Satisfaction vs Job Role in %
+df$JobSatIndex <- factor(df$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
+ggplot(df, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+
+#Over Time vs Job Satisfaction in %
+ggplot(df, aes(JobSatIndex, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Job Satisfaction" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+df$JobSatIndex <- as.character(df$JobSatIndex)
+```
