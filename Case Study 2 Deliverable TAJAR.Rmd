@@ -166,12 +166,12 @@ While exploring the data, these trends related to job role (and that may or may 
 #**JODI** Put the exploratory stuff about job role and overtime here, and you can also throw some info down under overtime
 
 #Job Satisfaction vs Job Role in %
-df$JobSatIndex <- factor(df$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
-ggplot(df, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+attritionDF$JobSatIndex <- factor(attritionDF$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
+ggplot(attritionDF, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
 
 #Over Time vs Job Satisfaction in %
-ggplot(df, aes(JobSatIndex, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Job Satisfaction" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
-df$JobSatIndex <- as.character(df$JobSatIndex)
+ggplot(attritionDF, aes(JobSatIndex, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Job Satisfaction" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+attritionDF$JobSatIndex <- as.character(attritionDF$JobSatIndex)
 ```
 
 For privacy reasons, IBM and TAJAR with DDSAnalytics did not want to run any analyses on minors. There were, however, no minors in the dataset. The age of the participating employees ranged from 18-60.
