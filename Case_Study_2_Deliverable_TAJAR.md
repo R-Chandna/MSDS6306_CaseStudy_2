@@ -41,18 +41,11 @@ library(ggplot2)
 ```
 
 ```
-## Warning: package 'ggplot2' was built under R version 3.4.4
+## Warning: package 'ggplot2' was built under R version 3.5.1
 ```
 
 ```r
 library(readxl)
-```
-
-```
-## Warning: package 'readxl' was built under R version 3.4.4
-```
-
-```r
 attritionDF <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
 
 #Number of Trainings Last Year - Jodi
@@ -71,7 +64,7 @@ library(stringr)
 ```
 
 ```
-## Warning: package 'stringr' was built under R version 3.4.4
+## Warning: package 'stringr' was built under R version 3.5.1
 ```
 
 ```r
@@ -346,13 +339,6 @@ occupationtable
 #3d. Give the counts (again, table) of management positions.
 #Needs some refining
 library(plyr)
-```
-
-```
-## Warning: package 'plyr' was built under R version 3.4.4
-```
-
-```r
 management <- count(attritionDF$JobRole)
 management <- management[management$x=="Manager",]
 ```
