@@ -7,7 +7,10 @@ An Nguyen anguyen2@mail.smu.edu<br>
 Jodi Pafford jpafford@mail.smu.edu<br>
 Tori Wheelis twheelis@mail.smu.edu<br>
 
-Data set of 1470 employee statistics from an unnamed company obtained from Dr. Jacquelyn Cheun from the Masters of Science in Data Science of the Southern Methodist University.
+Data set of 1470 employee statistics from IBM (a fake dataset) obtained from Dr. Jacquelyn Cheun from the Masters of Science in Data Science of the Southern Methodist University.
+
+Introduction:
+Attrition, or voluntary employee turnover, comes as a high cost to companies. The key to success for companies, then, is to attract and retain talent. To help facilitate talent management and reduce attrition, DDSAnalytics's in-house data science team, TAJAR, has compiled some important characteristics associated with increased risk of employee turnover. Our findings will allow companies to identify possible causes of employee turnover, create targeted approaches, and improve their talent management along with their company culture and profit margins.
 
 CODEBOOK FOR ATTRITION DATA
 (Original file: CaseStudy2-data.xlsx, Working file: Attrition_Data_Clean.xlsx)
