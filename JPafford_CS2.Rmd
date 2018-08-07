@@ -39,7 +39,7 @@ SatisfactionN <- subset(df, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, 
 head(SatisfactionN)
 
 #Create a visual to display.
-ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - No Attrition", x = "work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Not Lost to Attrition", x = "Work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
 ```
 
 

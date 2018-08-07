@@ -175,6 +175,26 @@ colnames(OverTimeTable) <- c("Freq")
 ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 ```
 
+4D - Life Satisfaction - Jodi
+When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
+
+```{r Satisfaction, echo=TRUE}
+#Create a Life Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
+Satisfaction <- subset(df, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(Satisfaction)
+
+#Create a visual to display.
+ggplot(Satisfaction, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Attrition", x = "work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+
+
+#Create a Life Satisfaction data frame with Attrition (No), Work Life Balance and Job Satsifaction.
+SatisfactionN <- subset(df, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(SatisfactionN)
+
+#Create a visual to display.
+ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Not Lost to Attrition", x = "Work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+```
+
 While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
 
 ```{r, echo=TRUE}
@@ -409,4 +429,4 @@ Of the employees who make less than 60,000 dollars a year, xx report low job sat
 #**JODI** update this summary along with the ppt. Tori will also help with this.
 ```
 
-Employees who are happy, have a good work-life balance, and who feel valued by their company are more likely to stay than those who are not. Those who do not have to work too many hours, who like their current manager, who feel stable in their position, who feel valued by their company because they are given autonomy, stock options, and a higher salary, are not going to seek that value elsewhere. Companies wishing to retain the best talent at their companies and reduce attrition will want to focus on making their employees feel valued and prioritizing and encouraging a strong work-life balance.
+Based on our research, an increase in monthly income would help you retain workers, however that is not always possible and would certainly not help the bottom line.  We would like to suggest that you explore the options of having employees set their own work schedule.  We feel that this may help eliminate some of your overtime and therefore creating workers who stay (and increase your financial status).  Are your workers working overtime because they truly need to or are they not productive during their scheduled working hours?  We would also like to suggest that you work on building capacity in your younger workers.  What are you doing to make sure they feel included in the company's day to workings.  Please consider a further review of your internal practices with younger employees.
