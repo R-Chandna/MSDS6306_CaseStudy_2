@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "","x"
 "Age",3.69684453393937e-06
 "WorkTravel",4.5520351358568e-05
@@ -31,3 +32,38 @@
 "YrsInRole",6.86731300741705e-07
 "LastPromoted",0
 "YrsWithMgr",-1.67407407407407e-05
+=======
+,x
+JobSatIndex,0.000336513
+OverTime,0.00020226
+WorkTravel,7.51E-05
+WorkLifeFit,5.50E-05
+TotWorkExp,4.88E-05
+PctSalaryInc,2.38E-05
+Department,2.16E-05
+DailyRate,1.71E-05
+MaritalState,1.56E-05
+Age,1.12E-05
+PerfRating,4.39E-06
+Gender,4.28E-06
+RelpSatIndex,3.81E-06
+StockOptLvl,1.67E-06
+JobInvolv,1.55E-06
+YrsAtCompany,4.19E-07
+FieldOfStudy,0
+Headcount,0
+JobRole,0
+NumPriorComp,0
+StdHours,0
+LastPromoted,0
+MonthlyRate,-4.61E-07
+EnvrSatIndex,-1.75E-06
+DistFromHome,-2.43E-06
+MonthlyInco,-4.73E-06
+HourlyRate,-6.73E-06
+Education,-8.27E-06
+YrsInRole,-1.54E-05
+JobLevel,-1.58E-05
+TrainedLstYr,-3.40E-05
+YrsWithMgr,-4.04E-05
+>>>>>>> cd8fb5c52f26548a7ce0e4c45360ea2383aca17b
