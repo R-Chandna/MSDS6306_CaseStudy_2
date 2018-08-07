@@ -174,14 +174,14 @@ colnames(OverTimeTable) <- c("Freq")
 ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 
 #Age
-ggplot(attritiondata, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
 ```
 
 When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
 
 ```{r Satisfaction, echo=TRUE}
 #Create a Life Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
-Satisfaction <- subset(df, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition))
+Satisfaction <- subset(attritionDF, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition))
 head(Satisfaction)
 
 #Create a visual to display.
@@ -189,7 +189,7 @@ ggplot(Satisfaction, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(positi
 
 
 #Create a Life Satisfaction data frame with Attrition (No), Work Life Balance and Job Satsifaction.
-SatisfactionN <- subset(df, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, Attrition))
+SatisfactionN <- subset(attritionDF, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, Attrition))
 head(SatisfactionN)
 
 #Create a visual to display.
