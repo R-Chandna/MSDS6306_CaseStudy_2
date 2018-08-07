@@ -102,9 +102,11 @@ as.matrix(lapply(attritionDF, class))
 The dataset included information gathered on 1,470 employees who voluntarily filled out an online survey and had 35 variables that included whether or not they left the company (attrition), demographics such as age, gender, and marital status, as well as employee information such as job role, stock options, and compensation, and also included some other metrics, such as relationship, environment, and job satisfaction, etc. There is a codebook included with this report that details all 35 variables and their names as used in our code.
 
 ```{r, echo=TRUE}
-#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Include any relevant code in the q3 code block below or wherever you see fit: 
+table(attritionDF$Gender)
+sort(unique(attritionDF$JobRole))
+table(attritionDF$Department)
 ```
-Of the employees, xx were male and xx were female. The job roles listed were xx, xx, xx, xx, xx, and xx, spread across xx, xx, xx, xx, and xx departments. The xx department had xx employees, the xx department had xx employees, and the xx department had xx employees. 
+Of the employees, 882 were male and 588 were female. The job roles listed were Healthcare Representative, Human Resources, Laboratory Technician, Manager, Manufacturing Director, Research Director, Research Scientist, Sales Executive, and Sales Represantative spread across Human Resources with 63 employees, Research & Development with 961 employees, and Sales with 446 employees.
 
 ```{r, echo=TRUE}
 #3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that's your choice.
@@ -140,9 +142,22 @@ SummaryStat
 ```
 
 ```{r, echo=TRUE}
-#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Make sure to include the bar chart of age vs. attrition and the bar chart of income vs. attrition from the EDA. Include any relevant code in the code block below or wherever you see fit: 
+#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Make sure to include the bar chart of age vs. attrition and the bar chart of income vs. attrition from the EDA. Include any relevant code in the code block below or wherever you see fit:
+table(attritionDF$Attrition)
+
+#Department
+ggplot(attritionDF, aes(x = Department, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Attrition per Department", x = "", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+tempDF <- attritionDF[,c("Attrition","Department")]
+table(melt(tempDF))
+
+#Age
+ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_histogram(position = "fill") + labs(title = "Attrition per Age Groups", x = "Age (years)", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+
+#Income
+ggplot(attritionDF, aes(x = MonthlyInco, fill = Attrition)) + geom_histogram(position = "fill") + labs(title = "Attrition per Monthly Income", x = "USD", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+
 ```
-Out of the xx employees, xx voluntarily left the company. The department with the most employees who left was the xx department. Employees between the ages of 18-21, who did not have stock options, who xx, who xx, and who xx also had higher attrition rates. However, there seemed to be no difference in attrition according to gender, xx, xx, or xx.m
+Out of the 1470 employees, 237 voluntarily left the company. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. Employees between the ages of 18-21, who did not have stock options, who xx, who xx, and who xx also had higher attrition rates. However, there seemed to be no difference in attrition according to gender, xx, xx, or xx.m
 
 ```{r, echo=TRUE}
 #Create table with summary of variables with categorial variables, using first two factors most likely to attribute to attrition
