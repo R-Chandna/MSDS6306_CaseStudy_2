@@ -1,6 +1,6 @@
 ---
 title: "Case Study 2 Deliverable TAJAR"
-author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandra"
+author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandna"
 date: "8/4/2018"
 output:
   html_document:
@@ -319,20 +319,19 @@ DDSAnalytics is an analytics company that specializes in talent management solut
 
 This data, obtained from IBM's corporate office, allows a snapshot in to a large, thriving corporate company whose profit margins and general company culture could benefit from reducing attrition rates. After the data was cleaned and corrected for any formatting errors (since a few of the measures were self-reports from the employees), TAJAR reviewed the descriptive statistics. Then, TAJAR built a random forest model and edited it to identify the variables most strongly associated with attrition. After the initial findings, TAJAR continued to dig deeper and understand the "why" behind the numbers.
 
-TAJAR used, in addition to some basic descriptive statistics, a random forest model to identify the most salient factors contributing to employee attrition (xxRAJAT**-- add more detail here. Expand on what you put in the slides if you started there first).
+TAJAR used, in addition to some basic descriptive statistics, a random forest model to identify the most salient factors contributing to employee attrition.x
 
 All of the code used to explore the data, including exploratory code not attached to this report, more details on the research methodology, and the data, as well a copy of this report, can be found online at https://github.com/R-Chandna/MSDS6306_CaseStudy_2.git.
 
 
 ```r
-#1a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
+#1a The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
 #1a: The README was updated to look pretty and have the basic introduction to everything. 
-#1b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
+#1b	You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
 #1b: The codebook was added as a separate file and to the README
-#1c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
-#1c: A clearly understandable directory was created and documented in the README **RAJAT**
+#1c	Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
+#1c: A clearly understandable directory was created and documented in the README 
 ```
-
 
 ## Dataset Overview, Demographics
 
@@ -340,8 +339,6 @@ The dataset used came without any missing values, and required only a little cle
 
 
 ```r
-library(stringr)
-
 # 2A - a	Read the csv into R and take a look at the data set.  Output how many rows and columns the data.frame is.
 # There are 1470 rows (observations) and 35 columns (variables)
 dimDF <- dim(attritionDF)
@@ -531,12 +528,33 @@ table(attritionDF$Department)
 ##        Human Resources Research & Development                  Sales 
 ##                     63                    961                    446
 ```
+
+For privacy reasons, IBM and TAJAR with DDSAnalytics did not want to run any analyses on minors. There were, however, no minors in the dataset. The age of the participating employees ranged from 18-60.
+
+
+```r
+#3a -	Remove all observations where the participant is under age 18.  No further analysis of underage individuals is permitted by your client.  Remove any other age outliers as you see fit, but be sure to tell what you’re doing and why.
+# Age between 18 and 60, no children under 18 and no obvious age outliers.
+summary(attritionDF$Age)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   18.00   30.00   36.00   36.92   43.00   60.00
+```
+
+```r
+attritionDF$Over18[attritionDF$Over18 == 'N']
+```
+
+```
+## character(0)
+```
 Of the employees, 882 were male and 588 were female. The job roles listed were Healthcare Representative, Human Resources, Laboratory Technician, Manager, Manufacturing Director, Research Director, Research Scientist, Sales Executive, and Sales Represantative spread across Human Resources with 63 employees, Research & Development with 961 employees, and Sales with 446 employees. Of Human Resource's 63 employees, 11 were managers. Of R&D's 961, 54 were managers, and of Sales' 446, 37 were managers.
 
 
 ```r
 #3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that's your choice.
-#Needs some refining
 gendertable <- table(attritionDF$Gender)
 gendertable
 ```
@@ -579,6 +597,7 @@ occupationtable
 
 ```r
 #3d. Give the counts (again, table) of management positions.
+#all the counts of all the positions (for comparison)
 management <- count(attritionDF, Department, JobRole)
 management
 ```
@@ -601,6 +620,7 @@ management
 ```
 
 ```r
+#just the manager positions
 filter(management, JobRole=="Manager")
 ```
 
@@ -640,6 +660,31 @@ SummaryStat
 ## NumPriorComp    0       1      2    2.693197       4     9
 ```
 
+Out of the 1470 employees, 237 voluntarily left the company, or roughly 16%. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. There were notable spikes in attrition for employees aged 18-21 and for employees who made less than 30,000 dollars a year, or 2,500 dollars a month. However, there seemed to be no significant difference in attrition according to gender or distance from home.
+
+
+```r
+#Create table with summary of variables with categorial variables, using first two factors most likely to attribute to attrition
+JobSatTable <- as.data.frame(table(attritionDF$JobSatIndex))
+JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
+colnames(JobSatTable) <- c("Freq")
+
+#Barplot of Job Satisfaction Level
+ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/demographics2-1.png)<!-- -->
+
+```r
+OverTimeTable <- as.data.frame(table(attritionDF$OverTime))
+OverTimeTable <- data.frame(OverTimeTable[,-1], row.names = OverTimeTable[,1])
+colnames(OverTimeTable) <- c("Freq")
+
+#Barplot of Over Time
+ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/demographics2-2.png)<!-- -->
 
 ```r
 table(attritionDF$Attrition)
@@ -656,7 +701,7 @@ table(attritionDF$Attrition)
 ggplot(attritionDF, aes(x = Department, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Attrition per Department", x = "", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/demographics2-3.png)<!-- -->
 
 ```r
 tempDF <- attritionDF[,c("Attrition","Department")]
@@ -683,7 +728,7 @@ ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_histogram(position = 
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-2.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/demographics2-4.png)<!-- -->
 
 ```r
 #Income
@@ -694,41 +739,215 @@ ggplot(attritionDF, aes(x = MonthlyInco, fill = Attrition)) + geom_histogram(pos
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-3.png)<!-- -->
-Out of the 1470 employees, 237 voluntarily left the company. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. Employees between the ages of 18-21, who did not have stock options, who were less satisfied with their jobs, with lower incomes, who worked in sales, and who had the lowest incomes also had higher attrition rates. However, there seemed to be no difference in attrition according to gender.
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/demographics2-5.png)<!-- -->
+
+## Deeper Analysis
+
+Since, during the demgraphics and exploratory phase of the data analysis, employees between the ages of 18-21 seemed to have a significant spike in attrition, and income seemed to have some relationship with attrition, TAJAR decided to further explore the relationship of these variables. It was found that age and income are correlated with each other. Age, though mostly normally distributed throughout the company, has a slightly larger amount of employees around the age of 36. The incomes of these employees, however are not normally distributed and a large majority of the employees make at or below 5,000 dollars a month, or 60,000 dollars a year or less.
 
 
 ```r
-#Create table with summary of variables with categorial variables, using first two factors most likely to attribute to attrition
-JobSatTable <- as.data.frame(table(attritionDF$JobSatIndex))
-JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
-colnames(JobSatTable) <- c("Freq")
+#An's code for Q4b
+library(RColorBrewer)
 
-#Barplot of Job Satisfaction Level
-ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+#4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
+##Monthly Rate
+ggplot(data = attritionDF, aes(x = Age, y = MonthlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Montly Rate vs Age", x = "Age", y = "Monthly Rate", color = "Gender")
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 ```r
-OverTimeTable <- as.data.frame(table(attritionDF$OverTime))
-OverTimeTable <- data.frame(OverTimeTable[,-1], row.names = OverTimeTable[,1])
-colnames(OverTimeTable) <- c("Freq")
-
-#Barplot of Over Time
-ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+test <- lm(attritionDF$MonthlyRate ~ attritionDF$Age)
+summary(test)
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-7-2.png)<!-- -->
+```
+## 
+## Call:
+## lm(formula = attritionDF$MonthlyRate ~ attritionDF$Age)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -12452  -6193    -45   6111  13056 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)     13506.10     773.19  17.468   <2e-16 ***
+## attritionDF$Age    21.86      20.33   1.075    0.282    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 7117 on 1468 degrees of freedom
+## Multiple R-squared:  0.0007869,	Adjusted R-squared:  0.0001062 
+## F-statistic: 1.156 on 1 and 1468 DF,  p-value: 0.2825
+```
 
 ```r
-#Age
-ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+##Daily Rate
+ggplot(data = attritionDF, aes(x = Age, y = DailyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Daily Rate vs Age", x = "Age", y = "Daily Rate", color = "Gender")
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-7-3.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-2.png)<!-- -->
 
-When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
+```r
+test <- lm(attritionDF$DailyRate ~ attritionDF$Age)
+summary(test)
+```
+
+```
+## 
+## Call:
+## lm(formula = attritionDF$DailyRate ~ attritionDF$Age)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -708.06 -337.55   -0.61  355.66  697.72 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)     785.0985    43.8469  17.905   <2e-16 ***
+## attritionDF$Age   0.4709     1.1528   0.408    0.683    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 403.6 on 1468 degrees of freedom
+## Multiple R-squared:  0.0001137,	Adjusted R-squared:  -0.0005675 
+## F-statistic: 0.1669 on 1 and 1468 DF,  p-value: 0.683
+```
+
+```r
+##Hourly Rate
+ggplot(data = attritionDF, aes(x = Age, y = HourlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Hourly Rate vs Age", x = "Age", y = "Hourly Rate", color = "Gender")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-3.png)<!-- -->
+
+```r
+test <- lm(attritionDF$HourlyRate ~ attritionDF$Age)
+summary(test)
+```
+
+```
+## 
+## Call:
+## lm(formula = attritionDF$HourlyRate ~ attritionDF$Age)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -36.868 -17.517   0.064  17.483  35.078 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)     63.89557    2.20855  28.931   <2e-16 ***
+## attritionDF$Age  0.05405    0.05806   0.931    0.352    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 20.33 on 1468 degrees of freedom
+## Multiple R-squared:  0.0005898,	Adjusted R-squared:  -9.096e-05 
+## F-statistic: 0.8664 on 1 and 1468 DF,  p-value: 0.3521
+```
+
+```r
+#4b. MonthlyInco shows correlation with Age.  Tried linear regression on untransformed data and log, reciprocal, square root transformations
+## untransformed
+ggplot(data = attritionDF, aes(x = Age, y = MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "Monthly Income", color = "Gender")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-4.png)<!-- -->
+
+```r
+## log transformed
+ggplot(data = attritionDF, aes(x = Age, y = log(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "log(Monthly Income)", color = "Gender", subtitle = "log transformed")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-5.png)<!-- -->
+
+```r
+## reciprocal transformed
+ggplot(data = attritionDF, aes(x = Age, y = -1/MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "-1/(Monthly Income)", color = "Gender", subtitle = "negative reciprocal transformed")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-6.png)<!-- -->
+
+```r
+## square root transformed
+ggplot(data = attritionDF, aes(x = Age, y = sqrt(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "sqrt(Monthly Income)", color = "Gender", subtitle = "square root transformed")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-7.png)<!-- -->
+
+```r
+#4b. Transformation did not yield better fit, fit test performed on most uncomplicated model, untransformed data
+test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Male')
+summary(test)
+```
+
+```
+## 
+## Call:
+## lm(formula = attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 
+##     "Male")
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -9940.2 -2524.5  -603.7  1659.1 12593.3 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)      -3028.8      577.6  -5.244 1.97e-07 ***
+## attritionDF$Age    256.7       15.3  16.779  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 4106 on 880 degrees of freedom
+## Multiple R-squared:  0.2424,	Adjusted R-squared:  0.2415 
+## F-statistic: 281.5 on 1 and 880 DF,  p-value: < 2.2e-16
+```
+
+```r
+test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Female')
+summary(test)
+```
+
+```
+## 
+## Call:
+## lm(formula = attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 
+##     "Female")
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -9558.6 -2686.3  -783.7  1990.1 12347.8 
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)     -2860.33     695.08  -4.115 4.42e-05 ***
+## attritionDF$Age   255.74      18.07  14.151  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 4057 on 586 degrees of freedom
+## Multiple R-squared:  0.2547,	Adjusted R-squared:  0.2534 
+## F-statistic: 200.3 on 1 and 586 DF,  p-value: < 2.2e-16
+```
+
+```r
+#Monthly Income is extremely left skewed, with the spike in values at or below $5000
+ggplot(attritionDF, aes(MonthlyInco)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Monthly Income", y = "Employees", x = "USD")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-8.png)<!-- -->
+
+```r
+#Age is slightly left skewed around 36 years of age
+ggplot(attritionDF, aes(Age)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Employee's Ages", y = "Employees", x = "Years")
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-2-9.png)<!-- -->
+
+When examining Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High". Most employees who stay at the company feel satisfied with their role, even if they feel they don’t have a great Work-Life Balance. Even with the a self-reported Job Satisfaction Rating at “Very High”, there is still a great loss due to attrition when they are self-reporting a Work-Life Balance of “Bad” or even “Good”.
 
 
 ```r
@@ -781,7 +1000,7 @@ ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(posit
 
 ![](Case_Study_2_Deliverable_TAJAR_files/figure-html/Satisfaction-2.png)<!-- -->
 
-While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
+TAJAR was asked specifically to investigate the attrition rate as it related to Job Role of the employee. When examined, it was found that, with one notable exception, job satisfaction did not have an effect on attrition. However, in the Human Resources Department, it is predicted that the low job satisfaction likely has some role in the high department attrition rate. Additionally, it was found that working overtime also did not have a significant effect on job satisfaction, although it did on attrition. And, when separated by job role, working overtime did not significantly predict an employee leaving. However, the jobs with the lowest monthly income had a higher turnover rate, which is reflected in overall department departures as well.
 
 
 ```r
@@ -790,45 +1009,183 @@ attritionDF$JobSatIndex <- factor(attritionDF$JobSatIndex, levels = c("Low", "Me
 ggplot(attritionDF, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 ```r
 #Over Time vs Job Satisfaction in %
 ggplot(attritionDF, aes(JobSatIndex, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Job Satisfaction" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
 ```
 
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-8-2.png)<!-- -->
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-3-2.png)<!-- -->
 
 ```r
 attritionDF$JobSatIndex <- as.character(attritionDF$JobSatIndex)
+
+#Over Time vs Attrition in %
+ggplot(attritionDF, aes(Attrition, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Attrition" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
 ```
 
-For privacy reasons, IBM and TAJAR with DDSAnalytics did not want to run any analyses on minors. There were, however, no minors in the dataset. The age of the participating employees ranged from 18-60.
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-3-3.png)<!-- -->
 
+```r
+attritionDF$Attrition <- as.character(attritionDF$Attrition)
+
+#What was the percentage of people who worked overtime that left, by JobRole?
+Attrition <- filter(attritionDF, Attrition == "Yes")
+attrition.aggregate <- count(Attrition, JobRole, OverTime)
+attrition.percentages <- attrition.aggregate %>% group_by(JobRole) %>% mutate(totalInRole=sum(n)) %>% group_by(OverTime) %>% mutate(percentage=paste0(round(100*n/totalInRole,2),'%'))
+attrition.percentages
+```
+
+```
+## # A tibble: 18 x 5
+## # Groups:   OverTime [2]
+##    JobRole                   OverTime     n totalInRole percentage
+##    <chr>                     <chr>    <int>       <int> <chr>     
+##  1 Healthcare Representative No           7           9 77.78%    
+##  2 Healthcare Representative Yes          2           9 22.22%    
+##  3 Human Resources           No           7          12 58.33%    
+##  4 Human Resources           Yes          5          12 41.67%    
+##  5 Laboratory Technician     No          31          62 50%       
+##  6 Laboratory Technician     Yes         31          62 50%       
+##  7 Manager                   No           1           5 20%       
+##  8 Manager                   Yes          4           5 80%       
+##  9 Manufacturing Director    No           6          10 60%       
+## 10 Manufacturing Director    Yes          4          10 40%       
+## 11 Research Director         No           1           2 50%       
+## 12 Research Director         Yes          1           2 50%       
+## 13 Research Scientist        No          14          47 29.79%    
+## 14 Research Scientist        Yes         33          47 70.21%    
+## 15 Sales Executive           No          26          57 45.61%    
+## 16 Sales Executive           Yes         31          57 54.39%    
+## 17 Sales Representative      No          17          33 51.52%    
+## 18 Sales Representative      Yes         16          33 48.48%
+```
+
+```r
+#How many people left per JobRole?
+count(attritionDF, JobRole)
+```
+
+```
+## # A tibble: 9 x 2
+##   JobRole                       n
+##   <chr>                     <int>
+## 1 Healthcare Representative   131
+## 2 Human Resources              52
+## 3 Laboratory Technician       259
+## 4 Manager                     102
+## 5 Manufacturing Director      145
+## 6 Research Director            80
+## 7 Research Scientist          292
+## 8 Sales Executive             326
+## 9 Sales Representative         83
+```
+
+```r
+count(filter(attritionDF, Attrition == "Yes"), JobRole)
+```
+
+```
+## # A tibble: 9 x 2
+##   JobRole                       n
+##   <chr>                     <int>
+## 1 Healthcare Representative     9
+## 2 Human Resources              12
+## 3 Laboratory Technician        62
+## 4 Manager                       5
+## 5 Manufacturing Director       10
+## 6 Research Director             2
+## 7 Research Scientist           47
+## 8 Sales Executive              57
+## 9 Sales Representative         33
+```
+
+```r
+#Total Monthly income per Job Role
+testDF <- dplyr::group_by(attritionDF, JobRole)
+summarize(testDF, avgMonthlySalary = mean(MonthlyInco))
+```
+
+```
+## # A tibble: 9 x 2
+##   JobRole                   avgMonthlySalary
+##   <chr>                                <dbl>
+## 1 Healthcare Representative            7529.
+## 2 Human Resources                      4236.
+## 3 Laboratory Technician                3237.
+## 4 Manager                             17182.
+## 5 Manufacturing Director               7295.
+## 6 Research Director                   16034.
+## 7 Research Scientist                   3240.
+## 8 Sales Executive                      6924.
+## 9 Sales Representative                 2626
+```
+
+When looking at job satisfaction, which executive leadership hypothesized would have a significant effect on attrition, the opposite was found to be true. In general, job satisfaction was found to be consistent across all ages and Job Roles, and when those who left the company were examined, those most likely to leave (ages 18-21 and those with the Job Roles of Sales Representatives, Lab technicians, and non-manage Human Resources Department Workers) were more likely to have a higher job satisfaction rating (with the notable and previously noted exception of Human Resources). 
 
 
 ```r
-#3a -	Remove all observations where the participant is under age 18.  No further analysis of underage individuals is permitted by your client.  Remove any other age outliers as you see fit, but be sure to tell what you’re doing and why.
-# Age between 18 and 60, no children under 18 and no obvious age outliers.
-summary(attritionDF$Age)
+#Plot Job Satisfaction by Age- ATTRITION YES
+#Create a Job Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
+JobSatisfaction <- subset(attritionDF, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition, Age))
+head(Satisfaction)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   18.00   30.00   36.00   36.92   43.00   60.00
+## # A tibble: 6 x 3
+##   JobSatIndex WorkLifeFit Attrition
+##   <chr>       <chr>       <chr>    
+## 1 Very High   Bad         Yes      
+## 2 High        Better      Yes      
+## 3 High        Better      Yes      
+## 4 Low         Better      Yes      
+## 5 Low         Better      Yes      
+## 6 Low         Better      Yes
 ```
 
 ```r
-attritionDF$Over18[attritionDF$Over18 == 'N']
+#organize factors for the plot
+JobSatisfaction$JobSatIndex <- factor(JobSatisfaction$JobSatIndex, levels = c("Very High", "High", "Medium", "Low"))
+
+#Plot JobSatIndex by Age
+ggplot(JobSatisfaction, aes(x = Age, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Job Satisfaction by Age", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/JobSatisfaction-1.png)<!-- -->
+
+```r
+#Plot Job Satisfaction by Age
+#Create a Job Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
+JobSatisfactionT <- subset(attritionDF, select=c(JobSatIndex, WorkLifeFit, Attrition, Age))
+head(JobSatisfactionT)
 ```
 
 ```
-## character(0)
+## # A tibble: 6 x 4
+##   JobSatIndex WorkLifeFit Attrition   Age
+##   <chr>       <chr>       <chr>     <dbl>
+## 1 Very High   Bad         Yes          41
+## 2 Medium      Better      No           49
+## 3 High        Better      Yes          37
+## 4 High        Better      No           33
+## 5 Medium      Better      No           27
+## 6 Very High   Good        No           32
 ```
 
-## Deeper Analysis, Evaluation, Results
+```r
+#organize factors for the plot
+JobSatisfactionT$JobSatIndex <- factor(JobSatisfactionT$JobSatIndex, levels = c("Very High", "High", "Medium", "Low"))
 
-Once TAJAR completed the random forest, it was found that the top 7 factors contributing to attrition were: 1) How satisfied an employee was with their hob, 2) Whether an employee reported working overtime, 3) How satisfied an employee was with their general environment, 4) What level their job was considered, on a scale from 1-5, 5) an employee's hourly rate, 6) An employee's work/life balance score, 7) and Whether or not the employee was married (which was closely correlated with their age.)
+#Plot JobSatIndex by Age
+ggplot(JobSatisfactionT, aes(x = Age, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Job Satisfaction by Age", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/JobSatisfaction-2.png)<!-- -->
+
+## Evaluation, Results
+
+Once TAJAR completed the random forest, it was found that the top 7 factors contributing to attrition were: 1) How much an employee made per month, 2) Whether an employee reported working overtime, 3) How old and employee was, 4) What their Daily Rate was, 5) Their Job Role (Job Title), 6) An employee's marital status, 7) and Whether or not the employee was offered stock options. Since age and income were very closely correlated, and certain job roles had much lower incomes than others, together, these tops variables put together a picture that employees who feel like they are fairly compensated and who are not tied down by other obligations won't leave a company.
 
 
 ```r
@@ -3205,7 +3562,6 @@ caret:::cforestStats(cf1)
 ```
 
 
-
 ```r
 names(subformattedAttrDF)
 ```
@@ -3460,225 +3816,6 @@ wordcloud(words = wordCloudDF$V1, freq = (wordCloudDF$V2 * 100), random.order=FA
 
 ![](Case_Study_2_Deliverable_TAJAR_files/figure-html/creatTheWordCloud-1.png)<!-- -->
 
-
-
-Since, during the demgraphics and exploratory phase of the data analysis, employees between the ages of 18-21 seemed to have a significant spike in attrition, and income seemed to have some relationship with attrition, TAJAR decided to further explore the relationship of these variables. It was found that age and income are correlated with each other. Age, though mostly normally distributed throughout the company, has a slightly larger amount of employees around the age of 36. The incomes of these employees, however are not normally distributed and a large majority of the employees make at or below 5,000 dollars a month, or 60,000 dollars a year or less.
-
-
-```r
-#An's code for Q4b
-library(RColorBrewer)
-
-#4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
-##Monthly Rate
-ggplot(data = attritionDF, aes(x = Age, y = MonthlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Montly Rate vs Age", x = "Age", y = "Monthly Rate", color = "Gender")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
-
-```r
-test <- lm(attritionDF$MonthlyRate ~ attritionDF$Age)
-summary(test)
-```
-
-```
-## 
-## Call:
-## lm(formula = attritionDF$MonthlyRate ~ attritionDF$Age)
-## 
-## Residuals:
-##    Min     1Q Median     3Q    Max 
-## -12452  -6193    -45   6111  13056 
-## 
-## Coefficients:
-##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)     13506.10     773.19  17.468   <2e-16 ***
-## attritionDF$Age    21.86      20.33   1.075    0.282    
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 7117 on 1468 degrees of freedom
-## Multiple R-squared:  0.0007869,	Adjusted R-squared:  0.0001062 
-## F-statistic: 1.156 on 1 and 1468 DF,  p-value: 0.2825
-```
-
-```r
-##Daily Rate
-ggplot(data = attritionDF, aes(x = Age, y = DailyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Daily Rate vs Age", x = "Age", y = "Daily Rate", color = "Gender")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-2.png)<!-- -->
-
-```r
-test <- lm(attritionDF$DailyRate ~ attritionDF$Age)
-summary(test)
-```
-
-```
-## 
-## Call:
-## lm(formula = attritionDF$DailyRate ~ attritionDF$Age)
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -708.06 -337.55   -0.61  355.66  697.72 
-## 
-## Coefficients:
-##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)     785.0985    43.8469  17.905   <2e-16 ***
-## attritionDF$Age   0.4709     1.1528   0.408    0.683    
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 403.6 on 1468 degrees of freedom
-## Multiple R-squared:  0.0001137,	Adjusted R-squared:  -0.0005675 
-## F-statistic: 0.1669 on 1 and 1468 DF,  p-value: 0.683
-```
-
-```r
-##Hourly Rate
-ggplot(data = attritionDF, aes(x = Age, y = HourlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Hourly Rate vs Age", x = "Age", y = "Hourly Rate", color = "Gender")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-3.png)<!-- -->
-
-```r
-test <- lm(attritionDF$HourlyRate ~ attritionDF$Age)
-summary(test)
-```
-
-```
-## 
-## Call:
-## lm(formula = attritionDF$HourlyRate ~ attritionDF$Age)
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -36.868 -17.517   0.064  17.483  35.078 
-## 
-## Coefficients:
-##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)     63.89557    2.20855  28.931   <2e-16 ***
-## attritionDF$Age  0.05405    0.05806   0.931    0.352    
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 20.33 on 1468 degrees of freedom
-## Multiple R-squared:  0.0005898,	Adjusted R-squared:  -9.096e-05 
-## F-statistic: 0.8664 on 1 and 1468 DF,  p-value: 0.3521
-```
-
-```r
-#4b. MonthlyInco shows correlation with Age.  Tried linear regression on untransformed data and log, reciprocal, square root transformations
-## untransformed
-ggplot(data = attritionDF, aes(x = Age, y = MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "Monthly Income", color = "Gender")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-4.png)<!-- -->
-
-```r
-## log transformed
-ggplot(data = attritionDF, aes(x = Age, y = log(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "log(Monthly Income)", color = "Gender", subtitle = "log transformed")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-5.png)<!-- -->
-
-```r
-## reciprocal transformed
-ggplot(data = attritionDF, aes(x = Age, y = -1/MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "-1/(Monthly Income)", color = "Gender", subtitle = "negative reciprocal transformed")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-6.png)<!-- -->
-
-```r
-## square root transformed
-ggplot(data = attritionDF, aes(x = Age, y = sqrt(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "sqrt(Monthly Income)", color = "Gender", subtitle = "square root transformed")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-7.png)<!-- -->
-
-```r
-#4b. Transformation did not yield better fit, fit test performed on most uncomplicated model, untransformed data
-test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Male')
-summary(test)
-```
-
-```
-## 
-## Call:
-## lm(formula = attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 
-##     "Male")
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -9940.2 -2524.5  -603.7  1659.1 12593.3 
-## 
-## Coefficients:
-##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)      -3028.8      577.6  -5.244 1.97e-07 ***
-## attritionDF$Age    256.7       15.3  16.779  < 2e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 4106 on 880 degrees of freedom
-## Multiple R-squared:  0.2424,	Adjusted R-squared:  0.2415 
-## F-statistic: 281.5 on 1 and 880 DF,  p-value: < 2.2e-16
-```
-
-```r
-test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Female')
-summary(test)
-```
-
-```
-## 
-## Call:
-## lm(formula = attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 
-##     "Female")
-## 
-## Residuals:
-##     Min      1Q  Median      3Q     Max 
-## -9558.6 -2686.3  -783.7  1990.1 12347.8 
-## 
-## Coefficients:
-##                 Estimate Std. Error t value Pr(>|t|)    
-## (Intercept)     -2860.33     695.08  -4.115 4.42e-05 ***
-## attritionDF$Age   255.74      18.07  14.151  < 2e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## Residual standard error: 4057 on 586 degrees of freedom
-## Multiple R-squared:  0.2547,	Adjusted R-squared:  0.2534 
-## F-statistic: 200.3 on 1 and 586 DF,  p-value: < 2.2e-16
-```
-
-```r
-#Monthly Income is extremely left skewed, with the spike in values at or below $5000
-ggplot(attritionDF, aes(MonthlyInco)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Monthly Income", y = "Employees", x = "USD")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-8.png)<!-- -->
-
-```r
-#Age is slightly left skewed around 36 years of age
-ggplot(attritionDF, aes(Age)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Employee's Ages", y = "Employees", x = "Years")
-```
-
-![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-10-9.png)<!-- -->
-
-
-```r
-#**AN** or **ANDY** or **JODI** or **TORI** please evaluate the following sentence and fill in
-```
-
-Of the employees who make less than 60,000 dollars a year, xx report low job satisfaction.
-
-
 ## Summary
 
-
-```r
-#**JODI** update this summary along with the ppt. Tori will also help with this.
-```
-
-Based on our research, an increase in monthly income would help you retain workers, however that is not always possible and would certainly not help the bottom line.  We would like to suggest that you explore the options of having employees set their own work schedule.  We feel that this may help eliminate some of your overtime and therefore creating workers who stay (and increase your financial status).  Are your workers working overtime because they truly need to or are they not productive during their scheduled working hours?  We would also like to suggest that you work on building capacity in your younger workers.  What are you doing to make sure they feel included in the company's day to workings.  Please consider a further review of your internal practices with younger employees.
+Based on our research, an increase in monthly income would help you retain workers, however that is not always possible and would certainly not help the bottom line.  We would like to suggest that you explore the options of having employees set their own work schedule.  We feel that this may help eliminate some of your overtime and therefore creating workers who stay (and increase your financial status).  Are your workers working overtime because they truly need to or are they not productive during their scheduled working hours?  We would also like to suggest that you work on building capacity in your younger workers.  What are you doing to make sure they feel included in the company's day to workings? Additionally, although raising income is not practical, furthering other types of compensation may help with attrition. Does your company offer other "perks" or "bonuses", such as health insurance, annual bonuses or raises, lunches, etc.? A further examination of compensation packages other than raising direct income might help alleviate the cost of attrition. And lastly, with the notable exception of job satisfaction amongst HR employees, it would benefit the company to reiview the current policies and work environment of the HR department to assess whether some simple changes, such as management structure.

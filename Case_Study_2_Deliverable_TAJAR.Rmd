@@ -1,6 +1,6 @@
 ---
 title: "Case Study 2 Deliverable TAJAR"
-author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandra"
+author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandna"
 date: "8/4/2018"
 output:
   html_document:
