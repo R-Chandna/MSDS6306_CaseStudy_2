@@ -325,7 +325,7 @@ plot(outOfBagErrorValues, type = "o", col= "Blue")
 ```{r Fitting_The_FinalModel_BasedOn_Mtry_And_nTree_Values}
 # Appropriate ntree and mtry values for lowest out of bag error are as 500 and 11. Hence,
 # fitting final model based on these
-FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 11)
+FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 17)
 FinalFittedModel
 ```
 
@@ -337,18 +337,12 @@ varImpPlot(FinalFittedModel)
 
 ```{r Finding_And_Plotting_Top_Predictors_Conditional_RForest}
 subformattedAttrDF <- subset(subformattedAttrDF, select = -Over18)
-cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=11,ntree=500))
-#relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
+cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=17,ntree=500))
+relativeImp_CondRandForest <- varimp(cf1)
+sort(relativeImp_CondRandForest, decreasing = T)
 #relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
 #relativeImp_CondRandForest
-# Importance based upon decrease in acuracy without corelation
-relativeImp_CondRandForest <-  varimpAUC(cf1)
-write.csv(relativeImp_CondRandForest, file = "Testing4.csv", row.names = T, append = F)
-# Importance based upon decrease in acuracy with corelation
-relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
-#relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
-relativeImp_CondRandForest_1
-write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T, append = F)
+write.csv(relativeImp_CondRandForest, file = "WordCloudData.csv", row.names = T, append = F)
 # Calculate Model Accuracy
 caret:::cforestStats(cf1)
 ```
@@ -364,11 +358,11 @@ relativeImp <- relativeImp[order(-relativeImp[,1]), , drop = F]
 relativeImp
 ```
 
-**So both Conditional Random Forest and Logistic Regression Model have found Overtime, JobSatisfaction and EnvironmentSatisfaction as top three predictors.**
+**So both Conditional Random Forest and Random Forest Model have found Overtime, Age and Monthly Income as top three predictors.**
 
 ```{r creatTheWordCloud}
-wordCloudDF <- read.xlsx(file = "WordCloudData.xlsx", header = F, 1)
-wordcloud(words = wordCloudDF$X1, freq = wordCloudDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
+wordCloudDF <- read.csv(file = "WordCloudData.csv", header = F, skip = 1)
+wordcloud(words = wordCloudDF$V1, freq = (wordCloudDF$V2 * 100), random.order=FALSE, rot.per=0, colors=brewer.pal(12, "Paired"))
 ```
 
 
