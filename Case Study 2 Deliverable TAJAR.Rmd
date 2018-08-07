@@ -14,6 +14,7 @@ library(ggplot2)
 library(readxl)
 library(randomForest)
 library(stringr)
+library(plyr)
 library(dplyr)
 library(tidyr)
 library(xlsx)
@@ -48,13 +49,12 @@ All of the code used to explore the data, including exploratory code not attache
 
 ```{r, echo=TRUE}
 #1a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
-#1a: The README WILL be updated to look pretty and have the basic introduction to everything. **Tori**
+#1a: The README was updated to look pretty and have the basic introduction to everything. 
 #1b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
-#1b: The codebook WILL BE added as a separate file and to the README - **AN**
+#1b: The codebook was added as a separate file and to the README
 #1c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
-#1c: A clearly understandable directory WILL BE created and documented in the README **RAJAT**
+#1c: A clearly understandable directory was created and documented in the README **RAJAT**
 ```
-
 
 
 ## Dataset Overview, Demographics
@@ -106,7 +106,7 @@ table(attritionDF$Gender)
 sort(unique(attritionDF$JobRole))
 table(attritionDF$Department)
 ```
-Of the employees, 882 were male and 588 were female. The job roles listed were Healthcare Representative, Human Resources, Laboratory Technician, Manager, Manufacturing Director, Research Director, Research Scientist, Sales Executive, and Sales Represantative spread across Human Resources with 63 employees, Research & Development with 961 employees, and Sales with 446 employees.
+Of the employees, 882 were male and 588 were female. The job roles listed were Healthcare Representative, Human Resources, Laboratory Technician, Manager, Manufacturing Director, Research Director, Research Scientist, Sales Executive, and Sales Represantative spread across Human Resources with 63 employees, Research & Development with 961 employees, and Sales with 446 employees. Of Human Resource's 63 employees, 11 were managers. Of R&D's 961, 54 were managers, and of Sales' 446, 37 were managers.
 
 ```{r, echo=TRUE}
 #3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that's your choice.
@@ -121,10 +121,9 @@ occupationtable <- table(attritionDF$JobRole)
 occupationtable
 
 #3d. Give the counts (again, table) of management positions.
-#Needs some refining
-library(plyr)
-management <- count(attritionDF$JobRole)
-management <- management[management$x=="Manager",]
+management <- count(attritionDF, Department, JobRole)
+management
+filter(management, JobRole=="Manager")
 
 #3b - b	Please provide (in table format or similar), descriptive statistics on at least 7 variables (age, Income, etc.).  Create a simple histogram for two of them.  Comment on the shape of the distribution in your markdown.
 # Create a table of summary statistics of Variables with numerical values
@@ -142,7 +141,6 @@ SummaryStat
 ```
 
 ```{r, echo=TRUE}
-#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Make sure to include the bar chart of age vs. attrition and the bar chart of income vs. attrition from the EDA. Include any relevant code in the code block below or wherever you see fit:
 table(attritionDF$Attrition)
 
 #Department
@@ -157,13 +155,14 @@ ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_histogram(position = 
 ggplot(attritionDF, aes(x = MonthlyInco, fill = Attrition)) + geom_histogram(position = "fill") + labs(title = "Attrition per Monthly Income", x = "USD", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
 
 ```
-Out of the 1470 employees, 237 voluntarily left the company. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. Employees between the ages of 18-21, who did not have stock options, who xx, who xx, and who xx also had higher attrition rates. However, there seemed to be no difference in attrition according to gender, xx, xx, or xx.m
+Out of the 1470 employees, 237 voluntarily left the company. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. Employees between the ages of 18-21, who did not have stock options, who were less satisfied with their jobs, with lower incomes, who worked in sales, and who had the lowest incomes also had higher attrition rates. However, there seemed to be no difference in attrition according to gender.
 
 ```{r, echo=TRUE}
 #Create table with summary of variables with categorial variables, using first two factors most likely to attribute to attrition
 JobSatTable <- as.data.frame(table(attritionDF$JobSatIndex))
 JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
 colnames(JobSatTable) <- c("Freq")
+
 #Barplot of Job Satisfaction Level
 ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 
@@ -173,9 +172,11 @@ colnames(OverTimeTable) <- c("Freq")
 
 #Barplot of Over Time
 ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+
+#Age
+ggplot(attritiondata, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
 ```
 
-4D - Life Satisfaction - Jodi
 When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
 
 ```{r Satisfaction, echo=TRUE}
@@ -198,7 +199,6 @@ ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(posit
 While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
 
 ```{r, echo=TRUE}
-#**JODI** Put the exploratory stuff about job role and overtime here, and you can also throw some info down under overtime
 
 #Job Satisfaction vs Job Role in %
 attritionDF$JobSatIndex <- factor(attritionDF$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
