@@ -1,0 +1,397 @@
+---
+title: "Case Study 2 Deliverable TAJAR"
+author: "Tori Wheelis, Andy Ho, An Nguyen, Jodi Pafford, Rajat Chandra"
+date: "8/4/2018"
+output:
+  html_document:
+    keep_md: yes
+---
+# Predicting And reducing Attrition Using Data Science
+
+```{r, echo=TRUE}
+# In order to import XLSX, we install the package "readxl" into our environment.  After loading library "readxl" we're able to use read_excel function to import the sheet "HR-employee-attrition Data" into a dataframe. 
+library(ggplot2)
+library(readxl)
+library(randomForest)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(xlsx)
+library(reshape2)
+library(party)
+library(gmodels)
+library(vcd)
+library(caret)
+library(e1071)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RColorBrewer)
+sessionInfo()
+attritionDF <- read_excel(path = "Attrition_Data_Clean.xlsx", sheet = "HR-employee-attrition Data")
+```
+
+## Introduction
+
+Attrition, or voluntary employee turnover, comes as a high cost to companies.  The cost of interviewing, training, productivity, and negative impacts on morale are just a few. The key to success for companies, then, is to attract and retain talent. To help facilitate talent management and reduce attrition, thereby reducing real cost to companies, DDSAnalytics's in-house data science team, TAJAR, has compiled some important characteristics associated with increased risk of employee turnover. Our findings will allow companies to identify possible causes of employee turnover, create targeted approaches, and improve their talent management along with their company culture and profit margins.
+
+DDSAnalytics is an analytics company that specializes in talent management solutions for Fortune 1000 companies. Talent management, broadly defined as the iterative process of developing and retaining employees, can include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). DDSAnalytics has joined forces with TAJAR, their new in-house data science team, to apply data analysis to a dataset from IBM in order to help improve IBM's attrition rate, and more broadly, the attrition rate of Fortune 1000 companies. This report gives a picture of the employees in the dataset, the top factors for attrition, and suggests targeted ways for companies to mitigate their attrition rates.
+ 
+
+## Methodology
+
+This data, obtained from IBM's corporate office, allows a snapshot in to a large, thriving corporate company whose profit margins and general company culture could benefit from reducing attrition rates. After the data was cleaned and corrected for any formatting errors (since a few of the measures were self-reports from the employees), TAJAR reviewed the descriptive statistics. Then, TAJAR built a random forest model and edited it to identify the variables most strongly associated with attrition. After the initial findings, TAJAR continued to dig deeper and understand the "why" behind the numbers.
+
+TAJAR used, in addition to some basic descriptive statistics, a random forest model to identify the most salient factors contributing to employee attrition (xxRAJAT**-- add more detail here. Expand on what you put in the slides if you started there first).
+
+All of the code used to explore the data, including exploratory code not attached to this report, more details on the research methodology, and the data, as well a copy of this report, can be found online at https://github.com/R-Chandna/MSDS6306_CaseStudy_2.git.
+
+```{r, echo=TRUE}
+#1a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
+#1a: The README WILL be updated to look pretty and have the basic introduction to everything. **Tori**
+#1b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
+#1b: The codebook WILL BE added as a separate file and to the README - **AN**
+#1c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
+#1c: A clearly understandable directory WILL BE created and documented in the README **RAJAT**
+```
+
+
+
+## Dataset Overview, Demographics
+
+The dataset used came without any missing values, and required only a little cleaning, mostly renaming the variables to be more readable and workable, and changing the format of a few variables so the data imported cleanly.
+
+```{r, echo=TRUE}
+library(stringr)
+
+# 2A - a	Read the csv into R and take a look at the data set.  Output how many rows and columns the data.frame is.
+# There are 1470 rows (observations) and 35 columns (variables)
+dimDF <- dim(attritionDF)
+names(dimDF) <- c("Rows", "Columns")
+dimDF
+
+# 2B - b	The column names are either too much or not enough.  Change the column names so that they do not have spaces, underscores, slashes, and the like. All column names should be under 12 characters. Make sure you’re updating your codebook with information on the tidied data set as well.
+# Results of column names and its string length count.  
+## Need to find a more elegant function to filter the list and subset only values greater than 12.  For now, this will suffice.
+lettercount <- str_length(names(attritionDF))
+countDF <- data.frame(cbind(names(attritionDF), lettercount))
+names(countDF) <- c("Variable", "LetterCount")
+countDF
+
+# Replacing Original Variable names that have > 12 characters with new names under the Working column in Attrition_Col_Name_New.csv.
+
+original <- names(attritionDF)
+write.csv(original, "Attrition_Col_Name_Old.csv")
+head(names(attritionDF))
+colNamesDF <- read.csv("Attrition_Col_Name_New.csv")
+working <- colNamesDF$Working
+names(attritionDF) <- working
+head(names(attritionDF))
+
+
+# 2C - Due to Qualtrics, the following columns will have its integer value replaced by the definitions provided in the "Data Definitions" sheet.  
+## Will need to seperate the integer and characters into two seperate columns.
+datadefDF <- read_excel ("CaseStudy2-data.xlsx", "Data Definitions")
+datadefDF
+
+# 2D - d	Make sure your columns are the proper data types (i.e., numeric, character, etc.).  If they are incorrect, convert them. 
+# Verifying the columns class type are numeric and character.
+as.matrix(lapply(attritionDF, class))
+```
+
+The dataset included information gathered on 1,470 employees who voluntarily filled out an online survey and had 35 variables that included whether or not they left the company (attrition), demographics such as age, gender, and marital status, as well as employee information such as job role, stock options, and compensation, and also included some other metrics, such as relationship, environment, and job satisfaction, etc. There is a codebook included with this report that details all 35 variables and their names as used in our code.
+
+```{r, echo=TRUE}
+#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Include any relevant code in the q3 code block below or wherever you see fit: 
+```
+Of the employees, xx were male and xx were female. The job roles listed were xx, xx, xx, xx, xx, and xx, spread across xx, xx, xx, xx, and xx departments. The xx department had xx employees, the xx department had xx employees, and the xx department had xx employees. 
+
+```{r, echo=TRUE}
+#3c. Give the frequencies (in table format or similar) for Gender, Education, and Occupation.  They can be separate tables, if that's your choice.
+#Needs some refining
+gendertable <- table(attritionDF$Gender)
+gendertable
+
+educationtable <- table(attritionDF$Education)
+educationtable
+
+occupationtable <- table(attritionDF$JobRole)
+occupationtable
+
+#3d. Give the counts (again, table) of management positions.
+#Needs some refining
+library(plyr)
+management <- count(attritionDF$JobRole)
+management <- management[management$x=="Manager",]
+
+#3b - b	Please provide (in table format or similar), descriptive statistics on at least 7 variables (age, Income, etc.).  Create a simple histogram for two of them.  Comment on the shape of the distribution in your markdown.
+# Create a table of summary statistics of Variables with numerical values
+SummaryStat <- matrix(ncol = 6, nrow = 0)
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$MonthlyInco))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$Age))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$DistFromHome))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$PctSalaryInc))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$TotWorkExp))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$YrsAtCompany))
+SummaryStat <- rbind(SummaryStat, summary(attritionDF$NumPriorComp))
+SummaryStat <- as.data.frame(SummaryStat)
+row.names(SummaryStat) <- c("MonthlyInco", "Age", "DistFromHome", "PctSalarInc", "TotWorkExp", "YrsAtCompany", "NumPriorComp")
+SummaryStat
+```
+
+```{r, echo=TRUE}
+#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Make sure to include the bar chart of age vs. attrition and the bar chart of income vs. attrition from the EDA. Include any relevant code in the code block below or wherever you see fit: 
+```
+Out of the xx employees, xx voluntarily left the company. The department with the most employees who left was the xx department. Employees between the ages of 18-21, who did not have stock options, who xx, who xx, and who xx also had higher attrition rates. However, there seemed to be no difference in attrition according to gender, xx, xx, or xx.m
+
+```{r, echo=TRUE}
+#Create table with summary of variables with categorial variables, using first two factors most likely to attribute to attrition
+JobSatTable <- as.data.frame(table(attritionDF$JobSatIndex))
+JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
+colnames(JobSatTable) <- c("Freq")
+#Barplot of Job Satisfaction Level
+ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+
+OverTimeTable <- as.data.frame(table(attritionDF$OverTime))
+OverTimeTable <- data.frame(OverTimeTable[,-1], row.names = OverTimeTable[,1])
+colnames(OverTimeTable) <- c("Freq")
+
+#Barplot of Over Time
+ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(OverTimeTable))) + labs(title = "Over Time", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
+```
+
+While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
+
+```{r, echo=TRUE}
+#**JODI** Put the exploratory stuff about job role and overtime here, and you can also throw some info down under overtime
+
+#Job Satisfaction vs Job Role in %
+attritionDF$JobSatIndex <- factor(attritionDF$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
+ggplot(attritionDF, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+
+#Over Time vs Job Satisfaction in %
+ggplot(attritionDF, aes(JobSatIndex, fill = OverTime)) + geom_bar(position = "fill")  + labs(title = "Over Time and Job Satisfaction" , y = "", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
+attritionDF$JobSatIndex <- as.character(attritionDF$JobSatIndex)
+```
+
+For privacy reasons, IBM and TAJAR with DDSAnalytics did not want to run any analyses on minors. There were, however, no minors in the dataset. The age of the participating employees ranged from 18-60.
+
+
+```{r, echo=TRUE}
+#3a -	Remove all observations where the participant is under age 18.  No further analysis of underage individuals is permitted by your client.  Remove any other age outliers as you see fit, but be sure to tell what you’re doing and why.
+# Age between 18 and 60, no children under 18 and no obvious age outliers.
+summary(attritionDF$Age)
+attritionDF$Over18[attritionDF$Over18 == 'N']
+```
+
+## Deeper Analysis, Evaluation, Results
+
+Once TAJAR completed the random forest, it was found that the top 7 factors contributing to attrition were: 1) How satisfied an employee was with their hob, 2) Whether an employee reported working overtime, 3) How satisfied an employee was with their general environment, 4) What level their job was considered, on a scale from 1-5, 5) an employee's hourly rate, 6) An employee's work/life balance score, 7) and Whether or not the employee was married (which was closely correlated with their age.)
+
+```{r Attrition_DataSet_Read}
+# Create a copy of original DataFrame
+formattedAttrDF <- data.frame(attritionDF)
+str(formattedAttrDF)
+```
+
+```{r Correct_Format_Of_Col_In_DataFrame}
+as.data.frame(apply(formattedAttrDF, 2, function(x) length(unique(x))))
+# Converting relevant Character Variables to Factors since these have levels. 
+convertToFactors <- c("Attrition", "WorkTravel", "Department", "Education", "FieldOfStudy", "EnvrSatIndex", "Gender", "JobInvolv", "JobLevel", "JobRole", "JobSatIndex" , "MaritalState", "Over18", "OverTime", "PerfRating", "RelpSatIndex", "StockOptLvl", "WorkLifeFit")
+for(columnName in convertToFactors){
+  formattedAttrDF[,columnName] <- as.factor(formattedAttrDF[,columnName])
+}
+# Extra Debug--Remove
+lapply(formattedAttrDF, function(x){if(is.factor(x)) levels(x)})
+levelsInfoDf <- read.xlsx2(file = "CaseStudy2-data.xlsx",sheetName = "Data Definitions", startRow = 3, header = F)
+str(levelsInfoDf)
+levelsInfoDf[ , c("levelNo", "levelName")] <- colsplit(levelsInfoDf$X2, " ", c("levelNo", "levelName"))
+levelsInfoDf$levelName <- gsub('[[:punct:]]+','',levelsInfoDf$levelName)
+levelsInfoDf
+
+# Give Meaningful Category Names to Levels of factors that have levels as "1", "2" etc 
+# This will be done based upon the data definations present in the case study sheet
+levels(formattedAttrDF$Education) <- levelsInfoDf[1:5, "levelName"]
+levels(formattedAttrDF$EnvrSatIndex) <- levelsInfoDf[7:10, "levelName"]
+levels(formattedAttrDF$JobInvolv) <- levelsInfoDf[12:15, "levelName"]
+levels(formattedAttrDF$JobSatIndex) <- levelsInfoDf[17:20, "levelName"]
+levels(formattedAttrDF$PerfRating) <- levelsInfoDf[22:25, "levelName"]
+levels(formattedAttrDF$RelpSatIndex) <- levelsInfoDf[27:30, "levelName"]
+levels(formattedAttrDF$WorkLifeFit) <- levelsInfoDf[32:35, "levelName"]
+# Assigning Levels to variables Job Level and Stock Options as these are not mentioned in data defination sheet
+levels(formattedAttrDF$JobLevel) <- c("Entry", "Experienced", "First-Level Management", "Middle-Level Management", "Top-Level Management")
+levels(formattedAttrDF$WorkTravel) <- c("Non-Travel", "Travel_Rarely", "Travel_Frequently")
+lapply(formattedAttrDF, function(x){if(is.factor(x)) levels(x)})
+
+all(complete.cases(formattedAttrDF))
+```
+
+```{r doingALittleEDA}
+## Create a vector of all categorical variables
+categoricalVarVec <- c("WorkTravel", "Department", "Education", "FieldOfStudy", "EnvrSatIndex", "Gender", "JobInvolv", "JobLevel", "JobRole", "JobSatIndex" , "MaritalState", "OverTime", "PerfRating", "RelpSatIndex", "StockOptLvl", "WorkLifeFit")
+for(categoricalVar in categoricalVarVec){
+  CrossTable(formattedAttrDF[ ,categoricalVar], formattedAttrDF$Attrition, chisq = T)
+  mosaicplot(CrossTable(formattedAttrDF[ ,categoricalVar], formattedAttrDF$Attrition)$t, main = paste("Attrition Vs", categoricalVar, sep = " "), xlab = categoricalVar, ylab = "Attrition", color = T)
+}
+## Do the same for Numeric Variables
+numericVarVec <- c("Age", "DailyRate", "DistFromHome", "HourlyRate", "MonthlyInco", "MonthlyRate", "NumPriorComp", "PctSalaryInc" , "TotWorkExp", "TrainedLstYr", "YrsAtCompany", "YrsInRole", "LastPromoted", "YrsWithMgr")
+# Recode the Attrition Var
+formattedAttrDF$RecodedAttrVar <- ifelse(formattedAttrDF$Attrition == "Yes", 1, 0)
+for(numericVar in numericVarVec){
+  plot(x = formattedAttrDF[ ,numericVar], y = formattedAttrDF$RecodedAttrVar,main = paste("Attrition Vs", numericVar, sep = " "), xlab = numericVar, ylab = "Attrition")
+}
+# Drop the Recoded Attrition Column
+formattedAttrDF <- subset(formattedAttrDF, select = -RecodedAttrVar)
+```
+
+```{r Fitting_The_Model}
+set.seed(99)
+subformattedAttrDF <- subset(formattedAttrDF, select = -EmployeeID)
+ModelRandomForest <- randomForest(Attrition ~ . , data=subformattedAttrDF, proximity=T)
+ModelRandomForest
+```
+
+```{r Plotting_OOBError_Vs_No_Of_Trees}
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForest$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForest$err.rate)),
+  Error=c(ModelRandomForest$err.rate[,"OOB"],
+    ModelRandomForest$err.rate[,"No"],
+    ModelRandomForest$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+
+# Adding More Trees to Forest and checking Out of Bag Error Rate
+ModelRandomForestWith1000Trees <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 1000,  proximity=T)
+ModelRandomForestWith1000Trees
+
+oob.error.data <- data.frame(
+  Trees=rep(1:nrow(ModelRandomForestWith1000Trees$err.rate), times=3),
+  Type=rep(c("OOB", "No", "Yes"), each=nrow(ModelRandomForestWith1000Trees$err.rate)),
+  Error=c(ModelRandomForestWith1000Trees$err.rate[,"OOB"],
+    ModelRandomForestWith1000Trees$err.rate[,"No"],
+    ModelRandomForestWith1000Trees$err.rate[,"Yes"]))
+
+ggplot(data=oob.error.data, aes(x=Trees, y=Error)) +
+  geom_line(aes(color=Type))
+```
+
+```{r Determining_The_Appropriate_Mtry_Value}
+outOfBagErrorValues <- vector(length = (dim(subformattedAttrDF)[2] - 1))
+for (randomVarCount in 1:length(outOfBagErrorValues)){
+  testModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500,  mtry = randomVarCount)
+  outOfBagErrorValues[randomVarCount] <- testModel$err.rate[nrow(testModel$err.rate),1]
+}
+outOfBagErrorValues
+plot(outOfBagErrorValues, type = "o", col= "Blue")
+```
+
+```{r Fitting_The_FinalModel_BasedOn_Mtry_And_nTree_Values}
+# Appropriate ntree and mtry values for lowest out of bag error are as 500 and 11. Hence,
+# fitting final model based on these
+FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 11)
+FinalFittedModel
+```
+
+```{r Finding_And_Plotting_Top_Predictors}
+importanceMatrix <- importance(FinalFittedModel)
+importanceMatrix[order(-importanceMatrix[,1]), ]
+varImpPlot(FinalFittedModel)
+```
+
+```{r Finding_And_Plotting_Top_Predictors_Conditional_RForest}
+subformattedAttrDF <- subset(subformattedAttrDF, select = -Over18)
+cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=11,ntree=500))
+#relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
+#relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
+#relativeImp_CondRandForest
+# Importance based upon decrease in acuracy without corelation
+relativeImp_CondRandForest <-  varimpAUC(cf1)
+write.csv(relativeImp_CondRandForest, file = "Testing4.csv", row.names = T, append = F)
+# Importance based upon decrease in acuracy with corelation
+relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
+#relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
+relativeImp_CondRandForest_1
+write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T, append = F)
+# Calculate Model Accuracy
+caret:::cforestStats(cf1)
+```
+
+
+```{r runLogisticRegressionModel}
+names(subformattedAttrDF)
+subformattedAttrDF <- subset(subformattedAttrDF, select = -c(StdHours, Headcount))
+logisticModelFit <- glm(Attrition ~ ., data=subformattedAttrDF, family = "binomial")
+summary(logisticModelFit)
+relativeImp <- varImp(logisticModelFit, scale = F)
+relativeImp <- relativeImp[order(-relativeImp[,1]), , drop = F]
+relativeImp
+```
+
+**So both Conditional Random Forest and Logistic Regression Model have found Overtime, JobSatisfaction and EnvironmentSatisfaction as top three predictors.**
+
+```{r creatTheWordCloud}
+wordCloudDF <- read.xlsx(file = "WordCloudData.xlsx", header = F, 1)
+wordcloud(words = wordCloudDF$X1, freq = wordCloudDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
+```
+
+
+
+Since, during the demgraphics and exploratory phase of the data analysis, employees between the ages of 18-21 seemed to have a significant spike in attrition, and income seemed to have some relationship with attrition, TAJAR decided to further explore the relationship of these variables. It was found that age and income are correlated with each other. Age, though mostly normally distributed throughout the company, has a slightly larger amount of employees around the age of 36. The incomes of these employees, however are not normally distributed and a large majority of the employees make at or below 5,000 dollars a month, or 60,000 dollars a year or less.
+
+```{r, echo=TRUE}
+#An's code for Q4b
+library(RColorBrewer)
+
+#4b there seemed to be no relationship between age and MonthlyRate, DailyRate, or HourlyRate
+##Monthly Rate
+ggplot(data = attritionDF, aes(x = Age, y = MonthlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Montly Rate vs Age", x = "Age", y = "Monthly Rate", color = "Gender")
+test <- lm(attritionDF$MonthlyRate ~ attritionDF$Age)
+summary(test)
+##Daily Rate
+ggplot(data = attritionDF, aes(x = Age, y = DailyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Daily Rate vs Age", x = "Age", y = "Daily Rate", color = "Gender")
+test <- lm(attritionDF$DailyRate ~ attritionDF$Age)
+summary(test)
+##Hourly Rate
+ggplot(data = attritionDF, aes(x = Age, y = HourlyRate)) + geom_point(aes(colour = factor(Gender))) + geom_smooth(method = "lm", aes(group = Gender, colour = Gender)) + labs(title = "Hourly Rate vs Age", x = "Age", y = "Hourly Rate", color = "Gender")
+test <- lm(attritionDF$HourlyRate ~ attritionDF$Age)
+summary(test)
+
+#4b. MonthlyInco shows correlation with Age.  Tried linear regression on untransformed data and log, reciprocal, square root transformations
+## untransformed
+ggplot(data = attritionDF, aes(x = Age, y = MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "Monthly Income", color = "Gender")
+## log transformed
+ggplot(data = attritionDF, aes(x = Age, y = log(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "log(Monthly Income)", color = "Gender", subtitle = "log transformed")
+## reciprocal transformed
+ggplot(data = attritionDF, aes(x = Age, y = -1/MonthlyInco)) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "-1/(Monthly Income)", color = "Gender", subtitle = "negative reciprocal transformed")
+## square root transformed
+ggplot(data = attritionDF, aes(x = Age, y = sqrt(MonthlyInco))) + geom_point(aes(colour = Gender)) + geom_smooth(method = 'lm', aes(group = Gender, colour = Gender)) + labs(title = "Montly Income vs Age", x = "Age", y = "sqrt(Monthly Income)", color = "Gender", subtitle = "square root transformed")
+
+#4b. Transformation did not yield better fit, fit test performed on most uncomplicated model, untransformed data
+test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Male')
+summary(test)
+test <- lm(attritionDF$MonthlyInco ~ attritionDF$Age, subset = attritionDF$Gender == 'Female')
+summary(test)
+
+#Monthly Income is extremely left skewed, with the spike in values at or below $5000
+ggplot(attritionDF, aes(MonthlyInco)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Monthly Income", y = "Employees", x = "USD")
+
+#Age is slightly left skewed around 36 years of age
+ggplot(attritionDF, aes(Age)) + geom_histogram(color = brewer.pal(11, "Spectral")[5], fill = brewer.pal(11, "Spectral")[4], bins = 30) + labs(title = "Employee's Ages", y = "Employees", x = "Years")
+```
+
+```{r, echo=TRUE}
+#**AN** or **ANDY** or **JODI** or **TORI** please evaluate the following sentence and fill in
+```
+
+Of the employees who make less than 60,000 dollars a year, xx report low job satisfaction.
+
+
+## Summary
+
+```{r, echo=TRUE}
+#**JODI** update this summary along with the ppt. Tori will also help with this.
+```
+
+Employees who are happy, have a good work-life balance, and who feel valued by their company are more likely to stay than those who are not. Those who do not have to work too many hours, who like their current manager, who feel stable in their position, who feel valued by their company because they are given autonomy, stock options, and a higher salary, are not going to seek that value elsewhere. Companies wishing to retain the best talent at their companies and reduce attrition will want to focus on making their employees feel valued and prioritizing and encouraging a strong work-life balance.
