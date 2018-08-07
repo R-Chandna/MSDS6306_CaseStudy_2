@@ -41,12 +41,20 @@ library(randomForest)
 
 ```r
 library(stringr)
+library(plyr)
 library(dplyr)
 ```
 
 ```
 ## 
 ## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
 ```
 
 ```
@@ -110,6 +118,17 @@ library(party)
 
 ```
 ## Loading required package: stats4
+```
+
+```
+## 
+## Attaching package: 'modeltools'
+```
+
+```
+## The following object is masked from 'package:plyr':
+## 
+##     empty
 ```
 
 ```
@@ -252,8 +271,9 @@ sessionInfo()
 ## [10] gmodels_2.18.1      party_1.3-0         strucchange_1.5-1  
 ## [13] sandwich_2.4-0      zoo_1.8-1           modeltools_0.2-22  
 ## [16] mvtnorm_1.0-8       reshape2_1.4.3      xlsx_0.6.1         
-## [19] tidyr_0.8.0         dplyr_0.7.4         stringr_1.3.1      
-## [22] randomForest_4.6-14 readxl_1.1.0        ggplot2_2.2.1      
+## [19] tidyr_0.8.0         dplyr_0.7.4         plyr_1.8.4         
+## [22] stringr_1.3.1       randomForest_4.6-14 readxl_1.1.0       
+## [25] ggplot2_2.2.1      
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] nlme_3.1-137       lubridate_1.7.4    dimRed_0.1.0      
@@ -270,18 +290,18 @@ sessionInfo()
 ## [34] magrittr_1.5       Matrix_1.2-14      Rcpp_0.12.16      
 ## [37] munsell_0.4.3      abind_1.4-5        stringi_1.1.7     
 ## [40] multcomp_1.4-8     yaml_2.1.19        MASS_7.3-49       
-## [43] plyr_1.8.4         recipes_0.1.2      parallel_3.5.0    
-## [46] gdata_2.18.0       splines_3.5.0      xlsxjars_0.6.1    
-## [49] knitr_1.20         pillar_1.2.2       codetools_0.2-15  
-## [52] CVST_0.2-2         magic_1.5-8        glue_1.2.0        
-## [55] evaluate_0.10.1    foreach_1.4.4      cellranger_1.1.0  
-## [58] gtable_0.2.0       purrr_0.2.4        kernlab_0.9-26    
-## [61] assertthat_0.2.0   DRR_0.0.3          gower_0.1.2       
-## [64] coin_1.2-2         prodlim_2018.04.18 broom_0.4.4       
-## [67] class_7.3-14       survival_2.41-3    geometry_0.3-6    
-## [70] timeDate_3043.102  RcppRoll_0.3.0     tibble_1.4.2      
-## [73] rJava_0.9-10       iterators_1.0.9    bindrcpp_0.2.2    
-## [76] lava_1.6.1         TH.data_1.0-9      ipred_0.9-6
+## [43] recipes_0.1.2      parallel_3.5.0     gdata_2.18.0      
+## [46] splines_3.5.0      xlsxjars_0.6.1     knitr_1.20        
+## [49] pillar_1.2.2       codetools_0.2-15   CVST_0.2-2        
+## [52] magic_1.5-8        glue_1.2.0         evaluate_0.10.1   
+## [55] foreach_1.4.4      cellranger_1.1.0   gtable_0.2.0      
+## [58] purrr_0.2.4        kernlab_0.9-26     assertthat_0.2.0  
+## [61] DRR_0.0.3          gower_0.1.2        coin_1.2-2        
+## [64] prodlim_2018.04.18 broom_0.4.4        class_7.3-14      
+## [67] survival_2.41-3    geometry_0.3-6     timeDate_3043.102 
+## [70] RcppRoll_0.3.0     tibble_1.4.2       rJava_0.9-10      
+## [73] iterators_1.0.9    bindrcpp_0.2.2     lava_1.6.1        
+## [76] TH.data_1.0-9      ipred_0.9-6
 ```
 
 ```r
@@ -306,13 +326,12 @@ All of the code used to explore the data, including exploratory code not attache
 
 ```r
 #1a	Tori: The client wants this to be reproducible and know exactly what you did.  There needs to be an informative Readme, complete with several sections, as referenced in Live Session.  Give contact information, session Info, and the objective of the repo at least.  
-#1a: The README WILL be updated to look pretty and have the basic introduction to everything. **Tori**
+#1a: The README was updated to look pretty and have the basic introduction to everything. 
 #1b	An: You have a large data set, and it needs its own Codebook, formatted in an approachable way.  Make sure you describe peculiarities of the data by variable and what needs transforming.  However, do not make it too long either.
-#1b: The codebook WILL BE added as a separate file and to the README - **AN**
+#1b: The codebook was added as a separate file and to the README
 #1c	Rajat: Create a file structure that is accessible and transparent.  Document it in the root directory, ideally in the Readme.
-#1c: A clearly understandable directory WILL BE created and documented in the README **RAJAT**
+#1c: A clearly understandable directory was created and documented in the README **RAJAT**
 ```
-
 
 
 ## Dataset Overview, Demographics
@@ -482,9 +501,37 @@ The dataset included information gathered on 1,470 employees who voluntarily fil
 
 
 ```r
-#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Include any relevant code in the q3 code block below or wherever you see fit: 
+table(attritionDF$Gender)
 ```
-Of the employees, xx were male and xx were female. The job roles listed were xx, xx, xx, xx, xx, and xx, spread across xx, xx, xx, xx, and xx departments. The xx department had xx employees, the xx department had xx employees, and the xx department had xx employees. 
+
+```
+## 
+## Female   Male 
+##    588    882
+```
+
+```r
+sort(unique(attritionDF$JobRole))
+```
+
+```
+## [1] "Healthcare Representative" "Human Resources"          
+## [3] "Laboratory Technician"     "Manager"                  
+## [5] "Manufacturing Director"    "Research Director"        
+## [7] "Research Scientist"        "Sales Executive"          
+## [9] "Sales Representative"
+```
+
+```r
+table(attritionDF$Department)
+```
+
+```
+## 
+##        Human Resources Research & Development                  Sales 
+##                     63                    961                    446
+```
+Of the employees, 882 were male and 588 were female. The job roles listed were Healthcare Representative, Human Resources, Laboratory Technician, Manager, Manufacturing Director, Research Director, Research Scientist, Sales Executive, and Sales Represantative spread across Human Resources with 63 employees, Research & Development with 961 employees, and Sales with 446 employees. Of Human Resource's 63 employees, 11 were managers. Of R&D's 961, 54 were managers, and of Sales' 446, 37 were managers.
 
 
 ```r
@@ -532,46 +579,41 @@ occupationtable
 
 ```r
 #3d. Give the counts (again, table) of management positions.
-#Needs some refining
-library(plyr)
+management <- count(attritionDF, Department, JobRole)
+management
 ```
 
 ```
-## -------------------------------------------------------------------------
-```
-
-```
-## You have loaded plyr after dplyr - this is likely to cause problems.
-## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-## library(plyr); library(dplyr)
-```
-
-```
-## -------------------------------------------------------------------------
-```
-
-```
-## 
-## Attaching package: 'plyr'
-```
-
-```
-## The following object is masked from 'package:modeltools':
-## 
-##     empty
-```
-
-```
-## The following objects are masked from 'package:dplyr':
-## 
-##     arrange, count, desc, failwith, id, mutate, rename, summarise,
-##     summarize
+## # A tibble: 11 x 3
+##    Department             JobRole                       n
+##    <chr>                  <chr>                     <int>
+##  1 Human Resources        Human Resources              52
+##  2 Human Resources        Manager                      11
+##  3 Research & Development Healthcare Representative   131
+##  4 Research & Development Laboratory Technician       259
+##  5 Research & Development Manager                      54
+##  6 Research & Development Manufacturing Director      145
+##  7 Research & Development Research Director            80
+##  8 Research & Development Research Scientist          292
+##  9 Sales                  Manager                      37
+## 10 Sales                  Sales Executive             326
+## 11 Sales                  Sales Representative         83
 ```
 
 ```r
-management <- count(attritionDF$JobRole)
-management <- management[management$x=="Manager",]
+filter(management, JobRole=="Manager")
+```
 
+```
+## # A tibble: 3 x 3
+##   Department             JobRole     n
+##   <chr>                  <chr>   <int>
+## 1 Human Resources        Manager    11
+## 2 Research & Development Manager    54
+## 3 Sales                  Manager    37
+```
+
+```r
 #3b - b	Please provide (in table format or similar), descriptive statistics on at least 7 variables (age, Income, etc.).  Create a simple histogram for two of them.  Comment on the shape of the distribution in your markdown.
 # Create a table of summary statistics of Variables with numerical values
 SummaryStat <- matrix(ncol = 6, nrow = 0)
@@ -600,9 +642,60 @@ SummaryStat
 
 
 ```r
-#**ANDY** or **AN**, fill in the x's in this section, and edit the content to your heart's desire. Make sure to include the bar chart of age vs. attrition and the bar chart of income vs. attrition from the EDA. Include any relevant code in the code block below or wherever you see fit: 
+table(attritionDF$Attrition)
 ```
-Out of the xx employees, xx voluntarily left the company. The department with the most employees who left was the xx department. Employees between the ages of 18-21, who did not have stock options, who xx, who xx, and who xx also had higher attrition rates. However, there seemed to be no difference in attrition according to gender, xx, xx, or xx.m
+
+```
+## 
+##   No  Yes 
+## 1233  237
+```
+
+```r
+#Department
+ggplot(attritionDF, aes(x = Department, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Attrition per Department", x = "", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
+tempDF <- attritionDF[,c("Attrition","Department")]
+table(melt(tempDF))
+```
+
+```
+## Using Attrition, Department as id variables
+```
+
+```
+##          Department
+## Attrition Human Resources Research & Development Sales
+##       No               51                    828   354
+##       Yes              12                    133    92
+```
+
+```r
+#Age
+ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_histogram(position = "fill") + labs(title = "Attrition per Age Groups", x = "Age (years)", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-2.png)<!-- -->
+
+```r
+#Income
+ggplot(attritionDF, aes(x = MonthlyInco, fill = Attrition)) + geom_histogram(position = "fill") + labs(title = "Attrition per Monthly Income", x = "USD", y = "", color = "") + scale_y_continuous(labels = scales::percent) + scale_fill_manual(values=c(brewer.pal(11, "Spectral")[3], brewer.pal(11, "Spectral")[10]))
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-6-3.png)<!-- -->
+Out of the 1470 employees, 237 voluntarily left the company. The department with the most employees who left was the the Sales department with ~20.6% attrition rate followed by Human Resources with ~19.0% and R&D with ~13.8%. Employees between the ages of 18-21, who did not have stock options, who were less satisfied with their jobs, with lower incomes, who worked in sales, and who had the lowest incomes also had higher attrition rates. However, there seemed to be no difference in attrition according to gender.
 
 
 ```r
@@ -610,6 +703,7 @@ Out of the xx employees, xx voluntarily left the company. The department with th
 JobSatTable <- as.data.frame(table(attritionDF$JobSatIndex))
 JobSatTable <- data.frame(JobSatTable[,-1], row.names = JobSatTable[,1])
 colnames(JobSatTable) <- c("Freq")
+
 #Barplot of Job Satisfaction Level
 ggplot(JobSatTable, aes(reorder(x=row.names(JobSatTable), -Freq), y=Freq)) + geom_bar(stat = "identity", aes(fill = row.names(JobSatTable))) + labs(title = "Employees' Job Satisfaction", y = "Number of Employees", x = "") + theme(axis.text.x = element_text(angle = 0, hjust = 1), legend.position="none") + scale_fill_brewer(palette="Spectral")
 ```
@@ -627,12 +721,70 @@ ggplot(OverTimeTable, aes(reorder(x=row.names(OverTimeTable), -Freq), y=Freq)) +
 
 ![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-7-2.png)<!-- -->
 
+```r
+#Age
+ggplot(attritionDF, aes(x = Age, fill = Attrition)) + geom_bar(position = "fill") + labs(title = "Age and Attrition", x = "Age", y = "", color = "")+ scale_y_continuous(labels = scales::percent)
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/unnamed-chunk-7-3.png)<!-- -->
+
+When looking at Life Satisfaction, we looked at the participants who were no longer working at the company against the self-reporting Work Life Balance rating of "Bad", "Good", "Better", or "Best" and the Job Satisfaction Index of "Low", "Medium", "High", and "Very High".
+
+
+```r
+#Create a Life Satisfaction data frame with Attrition (Yes), Work Life Balance and Job Satsifaction.
+Satisfaction <- subset(attritionDF, Attrition=="Yes", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(Satisfaction)
+```
+
+```
+## # A tibble: 6 x 3
+##   JobSatIndex WorkLifeFit Attrition
+##   <chr>       <chr>       <chr>    
+## 1 Very High   Bad         Yes      
+## 2 High        Better      Yes      
+## 3 High        Better      Yes      
+## 4 Low         Better      Yes      
+## 5 Low         Better      Yes      
+## 6 Low         Better      Yes
+```
+
+```r
+#Create a visual to display.
+ggplot(Satisfaction, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Attrition", x = "work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/Satisfaction-1.png)<!-- -->
+
+```r
+#Create a Life Satisfaction data frame with Attrition (No), Work Life Balance and Job Satsifaction.
+SatisfactionN <- subset(attritionDF, Attrition=="No", select=c(JobSatIndex, WorkLifeFit, Attrition))
+head(SatisfactionN)
+```
+
+```
+## # A tibble: 6 x 3
+##   JobSatIndex WorkLifeFit Attrition
+##   <chr>       <chr>       <chr>    
+## 1 Medium      Better      No       
+## 2 High        Better      No       
+## 3 Medium      Better      No       
+## 4 Very High   Good        No       
+## 5 Low         Good        No       
+## 6 High        Better      No
+```
+
+```r
+#Create a visual to display.
+ggplot(SatisfactionN, aes(x = WorkLifeFit, fill = JobSatIndex)) + geom_bar(position = "fill") + labs(title = "Life Satisfaction - Not Lost to Attrition", x = "Work-Life Balance with Job Satisfaction", y = "", color = "")+ scale_y_continuous(labels = scales::percent) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + scale_x_discrete(limits=c("Bad","Good","Better","Best"))
+```
+
+![](Case_Study_2_Deliverable_TAJAR_files/figure-html/Satisfaction-2.png)<!-- -->
+
 While exploring the data, these trends related to job role (and that may or may not directly relate to attrition) surfaced:
 
 
 ```r
-#**JODI** Put the exploratory stuff about job role and overtime here, and you can also throw some info down under overtime
-
 #Job Satisfaction vs Job Role in %
 attritionDF$JobSatIndex <- factor(attritionDF$JobSatIndex, levels = c("Low", "Medium", "High", "Very High"))
 ggplot(attritionDF, aes(JobRole, fill = JobSatIndex)) + geom_bar(position = "fill")  + labs(title = "Job Satisfaction per Job Role" , y = "", x = "") + theme(axis.text.x = element_text(angle = 55, hjust = 1)) + scale_fill_brewer(palette="Spectral") + scale_y_continuous(labels = scales::percent)
@@ -2958,23 +3110,23 @@ plot(outOfBagErrorValues, type = "o", col= "Blue")
 ```r
 # Appropriate ntree and mtry values for lowest out of bag error are as 500 and 11. Hence,
 # fitting final model based on these
-FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 11)
+FinalFittedModel <- randomForest(Attrition ~ . , data=subformattedAttrDF, ntree = 500, mtry = 17)
 FinalFittedModel
 ```
 
 ```
 ## 
 ## Call:
-##  randomForest(formula = Attrition ~ ., data = subformattedAttrDF,      ntree = 500, mtry = 11) 
+##  randomForest(formula = Attrition ~ ., data = subformattedAttrDF,      ntree = 500, mtry = 17) 
 ##                Type of random forest: classification
 ##                      Number of trees: 500
-## No. of variables tried at each split: 11
+## No. of variables tried at each split: 17
 ## 
-##         OOB estimate of  error rate: 14.35%
+##         OOB estimate of  error rate: 13.54%
 ## Confusion matrix:
 ##       No Yes class.error
 ## No  1211  22  0.01784266
-## Yes  189  48  0.79746835
+## Yes  177  60  0.74683544
 ```
 
 
@@ -2985,17 +3137,17 @@ importanceMatrix[order(-importanceMatrix[,1]), ]
 
 ```
 ##  MonthlyInco     OverTime          Age    DailyRate      JobRole 
-##   31.6100403   25.2441234   24.5292593   22.1752631   20.7123409 
+##   34.5019413   26.1084286   24.5722568   22.7162774   21.7271890 
 ##   TotWorkExp DistFromHome  MonthlyRate   HourlyRate YrsAtCompany 
-##   20.0683771   18.9912764   18.4294100   17.6857898   15.1796986 
-## NumPriorComp EnvrSatIndex FieldOfStudy  StockOptLvl PctSalaryInc 
-##   13.3070347   12.8796370   12.7843662   12.7546174   12.2516387 
-##  JobSatIndex   YrsWithMgr  WorkLifeFit LastPromoted RelpSatIndex 
-##   11.3817566   11.1227753   10.8453214   10.0124106    9.9930937 
-## TrainedLstYr    JobInvolv     JobLevel    Education    YrsInRole 
-##    9.8513517    9.3340775    8.8904278    8.7458738    8.4020358 
-## MaritalState   WorkTravel   Department       Gender   PerfRating 
-##    7.5560933    6.5358304    3.1614149    2.0363284    0.7849914 
+##   21.4384842   19.7749828   18.8393614   18.4376889   14.8195593 
+## EnvrSatIndex NumPriorComp  StockOptLvl FieldOfStudy PctSalaryInc 
+##   13.2740061   13.1612702   12.5604511   12.1113281   11.8605631 
+##  WorkLifeFit  JobSatIndex TrainedLstYr   YrsWithMgr LastPromoted 
+##   11.6364801   10.8882995   10.3452596    9.9378783    9.4481880 
+## RelpSatIndex    JobInvolv    YrsInRole MaritalState    Education 
+##    9.0687441    8.9282017    7.7052601    7.6844622    7.5110646 
+##     JobLevel   WorkTravel   Department       Gender   PerfRating 
+##    7.1303861    6.7771031    2.4092634    1.7118048    0.5920335 
 ##    Headcount       Over18     StdHours 
 ##    0.0000000    0.0000000    0.0000000
 ```
@@ -3009,51 +3161,37 @@ varImpPlot(FinalFittedModel)
 
 ```r
 subformattedAttrDF <- subset(subformattedAttrDF, select = -Over18)
-cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=11,ntree=500))
-#relativeImp_CondRandForest <- varimp(cf1, conditional=TRUE)
+cf1 <- cforest(Attrition ~ . , data=subformattedAttrDF, control=cforest_unbiased(mtry=17,ntree=500))
+relativeImp_CondRandForest <- varimp(cf1)
+sort(relativeImp_CondRandForest, decreasing = T)
+```
+
+```
+##      OverTime      JobLevel   StockOptLvl  MaritalState       JobRole 
+##  2.657037e-02  6.959259e-03  4.459259e-03  3.974074e-03  3.477778e-03 
+##   MonthlyInco           Age    TotWorkExp    Department    WorkTravel 
+##  3.292593e-03  2.985185e-03  2.422222e-03  1.840741e-03  1.774074e-03 
+##  DistFromHome  EnvrSatIndex    YrsWithMgr  YrsAtCompany     YrsInRole 
+##  1.288889e-03  1.207407e-03  1.118519e-03  1.081481e-03  9.370370e-04 
+##   JobSatIndex  NumPriorComp  RelpSatIndex  LastPromoted   WorkLifeFit 
+##  9.370370e-04  7.518519e-04  5.518519e-04  4.740741e-04  4.296296e-04 
+##  FieldOfStudy     JobInvolv     DailyRate  TrainedLstYr     Headcount 
+##  3.814815e-04  3.555556e-04  1.740741e-04  1.296296e-04  0.000000e+00 
+##      StdHours    PerfRating  PctSalaryInc    HourlyRate        Gender 
+##  0.000000e+00 -4.074074e-05 -8.888889e-05 -1.444444e-04 -1.629630e-04 
+##     Education   MonthlyRate 
+## -2.370370e-04 -3.481481e-04
+```
+
+```r
 #relativeImp_CondRandForest <- relativeImp_CondRandForest[order(-relativeImp_CondRandForest[,1]), , drop = F]
 #relativeImp_CondRandForest
-# Importance based upon decrease in acuracy without corelation
-relativeImp_CondRandForest <-  varimpAUC(cf1)
-write.csv(relativeImp_CondRandForest, file = "Testing4.csv", row.names = T, append = F)
+write.csv(relativeImp_CondRandForest, file = "WordCloudData.csv", row.names = T, append = F)
 ```
 
 ```
-## Warning in write.csv(relativeImp_CondRandForest, file = "Testing4.csv", :
-## attempt to set 'append' ignored
-```
-
-```r
-# Importance based upon decrease in acuracy with corelation
-relativeImp_CondRandForest_1 <-  varimpAUC(cf1, conditional = T)
-#relativeImp_CondRandForest_1 <- relativeImp_CondRandForest_1[order(-relativeImp_CondRandForest_1[,1]), , drop = F]
-relativeImp_CondRandForest_1
-```
-
-```
-##           Age    WorkTravel     DailyRate    Department  DistFromHome 
-##  3.696845e-06  4.552035e-05  2.588319e-05  2.337537e-05  2.323393e-06 
-##     Education  FieldOfStudy     Headcount  EnvrSatIndex        Gender 
-##  0.000000e+00  0.000000e+00  0.000000e+00  3.252148e-06  1.998930e-05 
-##    HourlyRate     JobInvolv      JobLevel       JobRole   JobSatIndex 
-##  0.000000e+00  4.034541e-06 -1.463808e-05  0.000000e+00  2.561153e-04 
-##  MaritalState   MonthlyInco   MonthlyRate  NumPriorComp      OverTime 
-##  0.000000e+00 -2.247668e-05  0.000000e+00  0.000000e+00  2.796166e-04 
-##  PctSalaryInc    PerfRating  RelpSatIndex      StdHours   StockOptLvl 
-##  2.586212e-06  2.582047e-06  1.210009e-07  0.000000e+00 -2.683828e-06 
-##    TotWorkExp  TrainedLstYr   WorkLifeFit  YrsAtCompany     YrsInRole 
-##  8.763421e-05 -4.862214e-05  5.312207e-05  1.357561e-06  6.867313e-07 
-##  LastPromoted    YrsWithMgr 
-##  0.000000e+00 -1.674074e-05
-```
-
-```r
-write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", row.names = T, append = F)
-```
-
-```
-## Warning in write.csv(relativeImp_CondRandForest_1, file = "Testing3.csv", :
-## attempt to set 'append' ignored
+## Warning in write.csv(relativeImp_CondRandForest, file =
+## "WordCloudData.csv", : attempt to set 'append' ignored
 ```
 
 ```r
@@ -3063,7 +3201,7 @@ caret:::cforestStats(cf1)
 
 ```
 ##  Accuracy     Kappa 
-## 0.8537415 0.2294132
+## 0.8585034 0.2840585
 ```
 
 
@@ -3312,12 +3450,12 @@ relativeImp
 ## FieldOfStudyTechnical Degree      0.01116854
 ```
 
-**So both Conditional Random Forest and Logistic Regression Model have found Overtime, JobSatisfaction and EnvironmentSatisfaction as top three predictors.**
+**So both Conditional Random Forest and Random Forest Model have found Overtime, Age and Monthly Income as top three predictors.**
 
 
 ```r
-wordCloudDF <- read.xlsx(file = "WordCloudData.xlsx", header = F, 1)
-wordcloud(words = wordCloudDF$X1, freq = wordCloudDF$X2, random.order=FALSE, rot.per=0, colors=brewer.pal(8, "Dark2"))
+wordCloudDF <- read.csv(file = "WordCloudData.csv", header = F, skip = 1)
+wordcloud(words = wordCloudDF$V1, freq = (wordCloudDF$V2 * 100), random.order=FALSE, rot.per=0, colors=brewer.pal(12, "Paired"))
 ```
 
 ![](Case_Study_2_Deliverable_TAJAR_files/figure-html/creatTheWordCloud-1.png)<!-- -->
@@ -3543,4 +3681,4 @@ Of the employees who make less than 60,000 dollars a year, xx report low job sat
 #**JODI** update this summary along with the ppt. Tori will also help with this.
 ```
 
-Employees who are happy, have a good work-life balance, and who feel valued by their company are more likely to stay than those who are not. Those who do not have to work too many hours, who like their current manager, who feel stable in their position, who feel valued by their company because they are given autonomy, stock options, and a higher salary, are not going to seek that value elsewhere. Companies wishing to retain the best talent at their companies and reduce attrition will want to focus on making their employees feel valued and prioritizing and encouraging a strong work-life balance.
+Based on our research, an increase in monthly income would help you retain workers, however that is not always possible and would certainly not help the bottom line.  We would like to suggest that you explore the options of having employees set their own work schedule.  We feel that this may help eliminate some of your overtime and therefore creating workers who stay (and increase your financial status).  Are your workers working overtime because they truly need to or are they not productive during their scheduled working hours?  We would also like to suggest that you work on building capacity in your younger workers.  What are you doing to make sure they feel included in the company's day to workings.  Please consider a further review of your internal practices with younger employees.
